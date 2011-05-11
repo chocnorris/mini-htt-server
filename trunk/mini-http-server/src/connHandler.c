@@ -50,8 +50,9 @@ int inicializarServidor(char *ip, int p)
 			}
 			if (es_exit(buffer)==0)
 				break;
-			size=strlen("HTTP/1.1 200 OK");
-			if ((numbytes=send(new_fd, "HTTP/1.1 200 OK", size, 0)) == -1) {
+			char* pagemsg="HTTP/1.1 200 OK\nDate: Wed, 11 May 2011 19:06:45 GMT\nServer: Apache\nLast-Modified: Wed, 11 May 2011 19:06:47 GMT\nConnection: close\nContent-Length: len\nContent-Type: text/html\n<html><head></head>hola</html>\n\n";
+			size=strlen(pagemsg);
+			if ((numbytes=send(new_fd, pagemsg, size, 0)) == -1) {
 				perror("send");
 				exit(1);
 			}
@@ -59,6 +60,7 @@ int inicializarServidor(char *ip, int p)
 		}
 		/* devolvemos recursos al sistema */
 		close(new_fd);
+
 	}
 	close(sockfd);
 	return 0;
