@@ -1,3 +1,6 @@
+
+
+
 /*
  * Example daemon shell code for all of the requirements of a basic
  * linux daemon written in C.
@@ -188,4 +191,5 @@ int main(int argc, char *argv[]) {
  
     exit(0);
 }
+
 
