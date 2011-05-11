@@ -9,11 +9,10 @@
 #include <time.h>
 #include <unistd.h>
 
-#define SERVER_PORT 2000
 #define BUFFLEN 1024
 int es_exit(char *msg);
 
-int escuchar(int argc, char **argv)
+int inicializarServidor(char *ip, int p)
 {
 	int sockfd,new_fd;
 	struct sockaddr_in my_addr; /* direccion IP y numero de puerto local */
@@ -23,7 +22,7 @@ int escuchar(int argc, char **argv)
 	char buffer [BUFFLEN];
 
 	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(SERVER_PORT);
+	my_addr.sin_port = htons(80);
 	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	bzero(&(my_addr.sin_zero), 8);
 	/* se crea el socket */
@@ -51,8 +50,8 @@ int escuchar(int argc, char **argv)
 			}
 			if (es_exit(buffer)==0)
 				break;
-			size=strlen(buffer);
-			if ((numbytes=send(new_fd, buffer, size, 0)) == -1) {
+			size=strlen("HTTP/1.1 200 OK");
+			if ((numbytes=send(new_fd, "HTTP/1.1 200 OK", size, 0)) == -1) {
 				perror("send");
 				exit(1);
 			}
