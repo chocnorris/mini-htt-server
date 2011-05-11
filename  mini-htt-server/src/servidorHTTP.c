@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <time.h>
+#include <unistd.h>
 
 #define SERVER_PORT 2000
 #define BUFFLEN 1024
