@@ -35,14 +35,15 @@ int inicializarServidor(char *ip, int p)
 		perror("bind");
 		exit(1);
 	}
+	pid_t pid_padre,pid_hijo;
+	pid_padre=getpid();
 
 	while (1){
 		/* Se le da un nombre al socket */
 		listen(sockfd,10);
 		addr_size= sizeof their_addr;
-		fork();
+		pid_hijo=fork();
 		new_fd=accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
-		while (1){
 			bzero(buffer,BUFFLEN);
 			if ((numbytes=recv(new_fd, buffer, BUFFLEN, 0)) == -1) {
 				perror("recv");
@@ -56,11 +57,9 @@ int inicializarServidor(char *ip, int p)
 				perror("send");
 				exit(1);
 			}
-			printf("Se envió un mensaje\n");
-		}
-		/* devolvemos recursos al sistema */
-		close(new_fd);
-
+			printf("Se envió un mensaje, pid %d, padre %d\n",getpid(), pid_padre);
+			close(new_fd);
+			if ((int)pid_hijo==0) return 0;
 	}
 	close(sockfd);
 	return 0;
