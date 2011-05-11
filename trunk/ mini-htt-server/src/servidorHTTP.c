@@ -1,19 +1,5 @@
-/*
- * Example daemon shell code for all of the requirements of a basic
- * linux daemon written in C.
- *
- * To use this code, search for 'TODO' and follow the directions.
- *
- * To compile this file:
- *      gcc -o [daemonname] thisfile.c
- *
- * Substitute gcc with cc on some platforms.
- *
- * Peter Lombardo (peter AT lombardo DOT info)
- * 5/1/2006
- *
- */
 
+/* .h de sistema */
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,152 +11,115 @@
 #include <assert.h>
 #include <signal.h>
 
-// TODO: Change '[daemonname]' to the name of _your_ daemon
-#define DAEMON_NAME "[daemonname]"
-#define PID_FILE "/var/run/[daemonname].pid"
+/* .h de aplicacion */
+
+/* .c de aplicacion */
+#include <signalHandler.c>
+
+#define DEMONIO "servidorHTTPd"
+#define PID_FILE "/var/run/servidorHTTPd.pid"
+
 
 /**************************************************************************
-    Function: Print Usage
-
-    Description:
-        Output the command-line options for this daemon.
-
-    Params:
-        @argc - Standard argument count
-        @argv - Standard argument array
-
-    Returns:
-        returns void always
+    -mostrarAyuda-
+    Descripcion:
+        Mostrar ayuda y opciones
+    Parametros:
+        @argc	cantidad de argumentos
+        @argv	lista de argumentos
+    Ret:
+        void
 **************************************************************************/
-void PrintUsage(int argc, char *argv[]) {
+void mostrarAyuda(int argc, char *argv[]) {
     if (argc >=1) {
-        printf("Usage: %s -h -nn", argv[0]);
+        printf("Uso: %s -h -nn", argv[0]);
         printf("  Options:n");
-        printf("      -ntDon't fork off as a daemon.n");
-        printf("      -htShow this help screen.n");
+        printf("      -ntModo Debug.n");
+        printf("      -htMostrar ayuda.n");
         printf("n");
     }
 }
 
-/**************************************************************************
-    Function: signal_handler
-
-    Description:
-        This function handles select signals that the daemon may
-        receive.  This gives the daemon a chance to properly shut
-        down in emergency situations.  This function is installed
-        as a signal handler in the 'main()' function.
-
-    Params:
-        @sig - The signal received
-
-    Returns:
-        returns void always
-**************************************************************************/
-void signal_handler(int sig) {
-
-    switch(sig) {
-        case SIGHUP:
-            syslog(LOG_WARNING, "Received SIGHUP signal.");
-            break;
-        case SIGTERM:
-            syslog(LOG_WARNING, "Received SIGTERM signal.");
-            break;
-        default:
-            syslog(LOG_WARNING, "Unhandled signal (%d) %s", strsignal(sig));
-            break;
-    }
-}
 
 /**************************************************************************
-    Function: main
-
-    Description:
-        The c standard 'main' entry point function.
-
-    Params:
-        @argc - count of command line arguments given on command line
-        @argv - array of arguments given on command line
-
+    -main-
+    Descripcion:
+        Funcion principal.
+    Parametros:
+        @argc	cantidad de parametros
+        @argv	lista de parametros
     Returns:
-        returns integer which is passed back to the parent process
+        EXIT_SUCCESS si finaliza normalmente
 **************************************************************************/
 int main(int argc, char *argv[]) {
 
-#if defined(DEBUG)
-    int daemonize = 0;
-#else
-    int daemonize = 1;
-#endif
-
-    // Setup signal handling before we start
-    signal(SIGHUP, signal_handler);
-    signal(SIGTERM, signal_handler);
-    signal(SIGINT, signal_handler);
-    signal(SIGQUIT, signal_handler);
-
+    //Manejo de señales
+	//ver cuales vamos a manejar
+    signal(SIGUSR1, signalHandler);
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
+    signal(SIGQUIT, signalHandler);
+    signal(SIGHUP, signalHandler);
+    mododebug=0;
     int c;
     while( (c = getopt(argc, argv, "nh|help")) != -1) {
         switch(c){
             case 'h':
-                PrintUsage(argc, argv);
+                mostrarAyuda(argc, argv);
                 exit(0);
                 break;
             case 'n':
-                daemonize = 0;
+                mododebug = 1;
                 break;
             default:
-                PrintUsage(argc, argv);
+                mostrarAyuda(argc, argv);
                 exit(0);
                 break;
         }
     }
 
-    syslog(LOG_INFO, "%s daemon starting up", DAEMON_NAME);
+    syslog(LOG_INFO, "iniciando %s...", DEMONIO);
 
-    // Setup syslog logging - see SETLOGMASK(3)
+    // LOG a SYSLOG
 #if defined(DEBUG)
     setlogmask(LOG_UPTO(LOG_DEBUG));
-    openlog(DAEMON_NAME, LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
+    openlog(DEMONIO, LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
 #else
     setlogmask(LOG_UPTO(LOG_INFO));
-    openlog(DAEMON_NAME, LOG_CONS, LOG_USER);
+    openlog(DEMONIO, LOG_CONS, LOG_USER);
 #endif
 
-    /* Our process ID and Session ID */
+    /* Process ID y Session ID */
     pid_t pid, sid;
 
-    if (daemonize) {
-        syslog(LOG_INFO, "starting the daemonizing process");
+    if (!mododebug) {
 
-        /* Fork off the parent process */
+        /* Anular padre */
         pid = fork();
         if (pid < 0) {
             exit(EXIT_FAILURE);
         }
-        /* If we got a good PID, then
-           we can exit the parent process. */
+        //pid válido
         if (pid > 0) {
             exit(EXIT_SUCCESS);
         }
 
-        /* Change the file mode mask */
+        /* Cambiar umask ??*/
         umask(0);
 
-        /* Create a new SID for the child process */
+        /* Setear Session ID para el hijo */
         sid = setsid();
         if (sid < 0) {
-            /* Log the failure */
             exit(EXIT_FAILURE);
         }
 
-        /* Change the current working directory */
+        /* Cambiar dir -noseparaque */
         if ((chdir("/")) < 0) {
             /* Log the failure */
             exit(EXIT_FAILURE);
         }
 
-        /* Close out the standard file descriptors */
+        /* Finalizar descriptores de archivos standard */
         close(STDIN_FILENO);
         close(STDOUT_FILENO);
         close(STDERR_FILENO);
@@ -180,12 +129,12 @@ int main(int argc, char *argv[]) {
     // TODO: Insert core of your daemon processing here
     //****************************************************
 
-    syslog(LOG_INFO, "%s daemon exiting", DAEMON_NAME);
+    syslog(LOG_INFO, "%s daemon exiting", DEMONIO);
 
     //****************************************************
     // TODO: Free any allocated resources before exiting
     //****************************************************
 
-    return EXIT_SUCCESS;
+    return exit(EXIT_SUCCESS);
 }
 
