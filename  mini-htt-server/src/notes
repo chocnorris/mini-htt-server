@@ -1,0 +1,7 @@
+En caso de no especificar documento html buscar en este orden: index.html,index.htm
+index.php.
+
+implementar 1.0->conexiones no persistentes
+manejar codigos de error de HTTP.
+
+
