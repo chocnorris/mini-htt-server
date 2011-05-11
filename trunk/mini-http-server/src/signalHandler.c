@@ -4,8 +4,17 @@
  *  Creado: 10/05/2011
  *  Autor: team
  */
-#include <syslog.h>
+#include <sys/types.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <syslog.h>
+#include <string.h>
+#include <assert.h>
+#include <signal.h>
+
 
 
 /**************************************************************************
