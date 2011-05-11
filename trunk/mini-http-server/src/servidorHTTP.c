@@ -43,9 +43,8 @@ void mostrarAyuda(char* argv[]) {
         printf("\tPUERTO\t Puerto en el cual debe escuchar el servidor\n");
         printf("\t-h\t Ayuda\n\n");
 
-        printf("Los campos entre [] son opcionales:\n");
-        printf("\t- Si no se especifica IP se usa 127.0.0.1 por defecto.\n");
-        printf("\t- Si no se especifica PUERTO se usa 80 por defecto.\n\n ");
+        printf("Si no se especifica IP y PUERTO se usa 127.0.0.1:80\n\n");
+
 }
 
 int parsePuerto(char *puerto){
@@ -89,7 +88,7 @@ int main(int argc, char *argv[]) {
     signal(SIGQUIT, signalHandler);
     signal(SIGHUP, signalHandler);
 
-    if (argc>1 && argc<=4){
+    if (argc>0 && argc<=4){
     	for (int i=0;i<sizeof(argv);i++){ //Buscar -h
     		if (argv[i]!=0)
     			if (strcmp(argv[i],"-h")==0){
