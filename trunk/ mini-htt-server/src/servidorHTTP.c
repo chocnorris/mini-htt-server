@@ -1,70 +1,191 @@
+/*
+ * Example daemon shell code for all of the requirements of a basic
+ * linux daemon written in C.
+ *
+ * To use this code, search for 'TODO' and follow the directions.
+ *
+ * To compile this file:
+ *      gcc -o [daemonname] thisfile.c
+ *
+ * Substitute gcc with cc on some platforms.
+ *
+ * Peter Lombardo (peter AT lombardo DOT info)
+ * 5/1/2006
+ *
+ */
+
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <errno.h>
-#include <string.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <time.h>
 #include <unistd.h>
+#include <syslog.h>
+#include <string.h>
+#include <assert.h>
+#include <signal.h>
 
-#define SERVER_PORT 2000
-#define BUFFLEN 1024
-int es_exit(char *msg);
+// TODO: Change '[daemonname]' to the name of _your_ daemon
+#define DAEMON_NAME "[daemonname]"
+#define PID_FILE "/var/run/[daemonname].pid"
 
-int main(int argc, char **argv)
-{
-	int sockfd,new_fd;
-	struct sockaddr_in my_addr; /* direccion IP y numero de puerto local */
-	struct sockaddr_in their_addr; /* direccion IP y numero de puerto del cliente */
-	socklen_t addr_size;
-	int numbytes,size;
-	char buffer [BUFFLEN];
+/**************************************************************************
+    Function: Print Usage
 
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(SERVER_PORT);
-	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	bzero(&(my_addr.sin_zero), 8);
-	/* se crea el socket */
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("socket");
-		exit(1);
-	}
-	printf("Creando socket ....\n");
-	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
-		perror("bind");
-		exit(1);
-	}
+    Description:
+        Output the command-line options for this daemon.
 
-	while (1){
-		/* Se le da un nombre al socket */
-		listen(sockfd,10);
-		addr_size= sizeof their_addr;
-		fork();
-		new_fd=accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
-		while (1){
-			bzero(buffer,BUFFLEN);
-			if ((numbytes=recv(new_fd, buffer, BUFFLEN, 0)) == -1) {
-				perror("recv");
-				exit(1);
-			}
-			if (es_exit(buffer)==0)
-				break;
-			size=strlen(buffer);
-			if ((numbytes=send(new_fd, buffer, size, 0)) == -1) {
-				perror("send");
-				exit(1);
-			}
-			printf("Se envió un mensaje\n");
-		}
-		/* devolvemos recursos al sistema */
-		close(new_fd);
-	}
-	close(sockfd);
-	return 0;
+    Params:
+        @argc - Standard argument count
+        @argv - Standard argument array
+
+    Returns:
+        returns void always
+**************************************************************************/
+void PrintUsage(int argc, char *argv[]) {
+    if (argc >=1) {
+        printf("Usage: %s -h -nn", argv[0]);
+        printf("  Options:n");
+        printf("      -ntDon't fork off as a daemon.n");
+        printf("      -htShow this help screen.n");
+        printf("n");
+    }
 }
 
-int es_exit(char *msg){
-	return strncmp(msg, "exit", 4);
+/**************************************************************************
+    Function: signal_handler
+
+    Description:
+        This function handles select signals that the daemon may
+        receive.  This gives the daemon a chance to properly shut
+        down in emergency situations.  This function is installed
+        as a signal handler in the 'main()' function.
+
+    Params:
+        @sig - The signal received
+
+    Returns:
+        returns void always
+**************************************************************************/
+void signal_handler(int sig) {
+
+    switch(sig) {
+        case SIGHUP:
+            syslog(LOG_WARNING, "Received SIGHUP signal.");
+            break;
+        case SIGTERM:
+            syslog(LOG_WARNING, "Received SIGTERM signal.");
+            break;
+        default:
+            syslog(LOG_WARNING, "Unhandled signal (%d) %s", strsignal(sig));
+            break;
+    }
+}
+
+/**************************************************************************
+    Function: main
+
+    Description:
+        The c standard 'main' entry point function.
+
+    Params:
+        @argc - count of command line arguments given on command line
+        @argv - array of arguments given on command line
+
+    Returns:
+        returns integer which is passed back to the parent process
+**************************************************************************/
+int main(int argc, char *argv[]) {
+
+#if defined(DEBUG)
+    int daemonize = 0;
+#else
+    int daemonize = 1;
+#endif
+
+    // Setup signal handling before we start
+    signal(SIGHUP, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGINT, signal_handler);
+    signal(SIGQUIT, signal_handler);
+
+    int c;
+    while( (c = getopt(argc, argv, "nh|help")) != -1) {
+        switch(c){
+            case 'h':
+                PrintUsage(argc, argv);
+                exit(0);
+                break;
+            case 'n':
+                daemonize = 0;
+                break;
+            default:
+                PrintUsage(argc, argv);
+                exit(0);
+                break;
+        }
+    }
+
+    syslog(LOG_INFO, "%s daemon starting up", DAEMON_NAME);
+
+    // Setup syslog logging - see SETLOGMASK(3)
+#if defined(DEBUG)
+    setlogmask(LOG_UPTO(LOG_DEBUG));
+    openlog(DAEMON_NAME, LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
+#else
+    setlogmask(LOG_UPTO(LOG_INFO));
+    openlog(DAEMON_NAME, LOG_CONS, LOG_USER);
+#endif
+
+    /* Our process ID and Session ID */
+    pid_t pid, sid;
+
+    if (daemonize) {
+        syslog(LOG_INFO, "starting the daemonizing process");
+
+        /* Fork off the parent process */
+        pid = fork();
+        if (pid < 0) {
+            exit(EXIT_FAILURE);
+        }
+        /* If we got a good PID, then
+           we can exit the parent process. */
+        if (pid > 0) {
+            exit(EXIT_SUCCESS);
+        }
+
+        /* Change the file mode mask */
+        umask(0);
+
+        /* Create a new SID for the child process */
+        sid = setsid();
+        if (sid < 0) {
+            /* Log the failure */
+            exit(EXIT_FAILURE);
+        }
+
+        /* Change the current working directory */
+        if ((chdir("/")) < 0) {
+            /* Log the failure */
+            exit(EXIT_FAILURE);
+        }
+
+        /* Close out the standard file descriptors */
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
+    }
+
+    //****************************************************
+    // TODO: Insert core of your daemon processing here
+    //****************************************************
+
+    syslog(LOG_INFO, "%s daemon exiting", DAEMON_NAME);
+
+    //****************************************************
+    // TODO: Free any allocated resources before exiting
+    //****************************************************
+
+    return EXIT_SUCCESS;
 }
 
