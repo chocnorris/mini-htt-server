@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-
+#include <regex.h>
 
 void enviarPagina(String file){
 
@@ -13,24 +13,17 @@ const int HTTP_FNOTFND=404;
 
 const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
 
-/*
- * char* pagemsg="HTTP/1.1 200 OK\n\
-Date: Wed, 11 May 2011 19:06:45 GMT\n\
-Server: Apache\n\
-Last-Modified: Wed, 11 May 2011 19:06:47 GMT\n\
-Connection: close\n\
-Content-Length: len\n\
-Content-Type: text/html\n\
-	<html><head></head>hola</html>\n\n";
+typedef struct req_struct {
+	int codigo;
+	char *path;
+	char *mime_type;
+} request ;
 
-void enviarPagina(String file){
-
-
-
+request procesarPedido(char *string){
+	request ret=malloc(sizeof(request));
+	char *path;
+	sprintf(string,"GET %s",path);
 }
-*/
-
-
 
 int enviarHeader(int flag, int sockfd){
 	//flag=codigo de error
