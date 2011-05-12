@@ -8,13 +8,12 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-
 #include "dataHandler.c"
+#include "connHandler.h"
+
 #define BUFFLEN 1024
 
-
-int inicializarServidor(char *ip, int p)
-{
+int inicializarServidor(char *ip, int p){
 	int sockfd,new_fd;
 	struct sockaddr_in my_addr; /* direccion IP y numero de puerto local */
 	struct sockaddr_in their_addr; /* direccion IP y numero de puerto del cliente */
