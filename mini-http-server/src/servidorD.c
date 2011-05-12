@@ -15,7 +15,7 @@
 /* .h de aplicacion */
 
 /* .c de aplicacion */
-#include "signalHandler.h"
+//#include "signalHandler.h"
 #include "connHandler.c"
 
 #define DEMONIO "servidorHTTPd"
@@ -66,6 +66,22 @@ void info(char *msg){
 	syslog(LOG_INFO, msg, DEMONIO);
 }
 
+void signalHandler(int sig) {
+
+    switch(sig) {
+        case SIGHUP:
+            syslog(LOG_WARNING, "Recibida señal SIGHUP");
+            break;
+        case SIGTERM:
+            syslog(LOG_WARNING, "Recibida señal SIGTERM");
+            break;
+        case SIGUSR1:
+			syslog(LOG_WARNING, "Recibida señal SIGUSR1");
+        default:
+            syslog(LOG_WARNING, "Señal no manejada (%d) %s", strsignal(sig));
+            break;
+    }
+}
 
 
 /**************************************************************************

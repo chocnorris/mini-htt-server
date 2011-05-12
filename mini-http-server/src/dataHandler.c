@@ -3,26 +3,19 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <regex.h>
-
-void enviarPagina(String file){
-
-}
+#include "dataHandler.h"
 
 const int HTTP_OK=200;
 const int HTTP_FNOTFND=404;
 
 const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
 
-typedef struct req_struct {
-	int codigo;
-	char *path;
-	char *mime_type;
-} request ;
 
 request procesarPedido(char *string){
-	request ret=malloc(sizeof(request));
+	request ret;
 	char *path;
 	sprintf(string,"GET %s",path);
+	return ret;
 }
 
 int enviarHeader(int flag, int sockfd){
