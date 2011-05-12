@@ -41,7 +41,7 @@ int inicializarServidor(char *ip, int p)
 	addr_size= sizeof their_addr;
 	while (1){
 		/* Se le da un nombre al socket */
-		new_fd=accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
+	new_fd=accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
 		pid_hijo=fork();
 		if(pid_hijo!=0){
 			continue;
