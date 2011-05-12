@@ -1,25 +1,77 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
-
-sprintf(msg,"HTTP/1.1 200 OK\nDate: %s\nServer: %s\nLast-Modified: %s\nConnection: close\nContent-Length: %d\nContent-Type: text/html\n",fecha_actual,fecha_modif,length);
 
 void enviarPagina(String file){
 
 }
 
-char[] gettime(){
-	char s[30];
-	size_t i;
-	struct tm tim;
-	time_t now;
-	now = time(NULL);
-	tim = *(localtime(&now));
-	i = strftime(s,30,"%b %d, %Y; %H:%M:%S\n",&tim);
-//esto en perl obtiene como en protocolo HTTP:
-	gmstrftime ("%A %d-%b-%y %T %Z", time ());
-//obtains the current date and time and puts it into "s" in a format like
+const int HTTP_OK=200;
+const int HTTP_FNOTFND=404;
 
-//Jan 10, 1987; 17:55:55\n
+const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
+
+/*
+ * char* pagemsg="HTTP/1.1 200 OK\n\
+Date: Wed, 11 May 2011 19:06:45 GMT\n\
+Server: Apache\n\
+Last-Modified: Wed, 11 May 2011 19:06:47 GMT\n\
+Connection: close\n\
+Content-Length: len\n\
+Content-Type: text/html\n\
+	<html><head></head>hola</html>\n\n";
+
+void enviarPagina(String file){
+
+
+
 }
+*/
+
+
+
+int enviarHeader(int flag, int sockfd){
+	//flag=codigo de error
+	if(flag==HTTP_OK)
+		send(sockfd, HD_HTTP_OK, strlen(HD_HTTP_OK), 0);
+	send(sockfd,"\n",1, 0);
+	return 0;
+
+}
+
+int enviarHTML(char *path, int sockfd){
+
+	FILE *html=fopen(path,"r");
+	char *datos=(char *) malloc(sizeof(char)*1024);
+	while (!feof(html)){
+		int cant=fread(datos,sizeof(char),1024,html);
+		send(sockfd, datos, strlen(datos), 0);
+	}
+	free(datos);
+	fclose(html);
+	return 0;
+}
+
+
+int push(char *datos, int *longitud,int sockfd)
+{
+    int total = 0;     //enviados
+    int enviados;
+    int restantes = *longitud; // datos que faltan
+
+
+    while(total < *longitud) {
+        enviados = send(sockfd, datos+total, restantes, 0);
+        if (enviados == -1) { break; }
+        total += enviados;
+        restantes -= enviados;
+    }
+
+    *longitud = total; // return number actually sent here
+
+    if (enviados==-1) return -1;
+    else return 0;
+ }
+

@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     signal(SIGTERM, signalHandler);
     signal(SIGQUIT, signalHandler);
     signal(SIGHUP, signalHandler);
-
+    signal(SIGCHLD, SIG_IGN);
     if (argc>0 && argc<=4){
     	for (int i=0;i<sizeof(argv);i++){ //Buscar -h
     		if (argv[i]!=0)
@@ -112,9 +112,10 @@ int main(int argc, char *argv[]) {
 
     /* Process ID y Session ID */
     pid_t pid, sid;
-    daemon(1,1);
+    //daemon(1,1);
+    chdir("htdocs/");
     inicializarServidor(IP,PUERTO);
-    printf("termino un hijo");
+    printf("terminó un hijo\n");
     exit(EXIT_SUCCESS);
 }
 
