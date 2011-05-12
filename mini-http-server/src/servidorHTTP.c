@@ -21,7 +21,7 @@
 #define DEMONIO "servidorHTTPd"
 #define PID_FILE "/var/run/servidorHTTPd.pid"
 
-int mododebug=0;
+int mododebug=1;
 int PUERTO=80;
 char* IP="127.0.0.1";
 
