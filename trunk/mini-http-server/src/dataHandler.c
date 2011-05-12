@@ -10,16 +10,54 @@ const int HTTP_FNOTFND=404;
 
 const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
 
+const char* DEF_PATH_1="index.html";
+const char* DEF_PATH_2="index.htm";
+const char* DEF_PATH_3="index.php";
+const char* ERROR_PATH="error";
+
+char* pedidoPrincipal(){
+	char* ret;
+	if(existeArchivo(DEF_PATH_1))
+		strcpy(ret,DEF_PATH_1);
+	if(existeArchivo(DEF_PATH_2))
+		strcpy(ret,DEF_PATH_2);
+	if(existeArchivo(DEF_PATH_3))
+		strcpy(ret,DEF_PATH_3);
+	strcpy(ret,ERROR_PATH);
+	return ret;
+}
 
 void procesarPedido(char *string, response *resp){
 
-	resp->path=(char*)malloc((sizeof(char)*strlen(string))-4);
-	sscanf(string,"GET %s",resp->path);
-	//Hasta aca anda ruta esta ok no se por que falla despues al obtener afuera los valores de path y codigo :S
-	resp->codigo=200;
-	resp->mime_type=0;
+	int largo=sizeof(char)*strlen(string)-4;
+	resp->path=(char*)malloc(largo);
+	if(strncmp(string, "GET http://", 7)){
+		sscanf(string, "GET http://%d.%d.%d.%d/%s", resp->path);
+		if(!existeArchivo(resp->path))
+			resp->codigo=HTTP_FNOTFND;
+		else{
+			resp->codigo=HTTP_OK;
+			resp->mime_type=0;
+		}
+		return;
+	}
+	if(strncmp(string, "GET /",5)){
+		resp->path=pedidoPrincipal();
+		if(strcmp(resp->path,ERROR_PATH))
+			resp->codigo=HTTP_FNOTFND;
+		else{
+			resp->codigo=HTTP_OK;
+			resp->mime_type=0;
+		}
+		return;
+	}
 }
 
+int existeArchivo(char* path){
+	if(fopen(path,0)==0)
+		return 0;
+	else return 1;
+}
 
 int enviarHeader(int flag, int sockfd){
 	//flag=codigo de error
