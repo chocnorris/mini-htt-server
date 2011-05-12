@@ -37,29 +37,39 @@ int inicializarServidor(char *ip, int p)
 	}
 	pid_t pid_padre,pid_hijo;
 	pid_padre=getpid();
-
+	listen(sockfd,10);
+	addr_size= sizeof their_addr;
 	while (1){
 		/* Se le da un nombre al socket */
-		listen(sockfd,10);
-		addr_size= sizeof their_addr;
-		pid_hijo=fork();
 		new_fd=accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
-			bzero(buffer,BUFFLEN);
-			if ((numbytes=recv(new_fd, buffer, BUFFLEN, 0)) == -1) {
-				perror("recv");
-				exit(1);
-			}
-			if (es_exit(buffer)==0)
-				break;
-			char* pagemsg="HTTP/1.1 200 OK\nDate: Wed, 11 May 2011 19:06:45 GMT\nServer: Apache\nLast-Modified: Wed, 11 May 2011 19:06:47 GMT\nConnection: close\nContent-Length: len\nContent-Type: text/html\n<html><head></head>hola</html>\n\n";
-			size=strlen(pagemsg);
-			if ((numbytes=send(new_fd, pagemsg, size, 0)) == -1) {
-				perror("send");
-				exit(1);
-			}
-			printf("Se envió un mensaje, pid %d, padre %d\n",getpid(), pid_padre);
-			close(new_fd);
-			if ((int)pid_hijo==0) return 0;
+		pid_hijo=fork();
+		if(pid_hijo!=0){
+			continue;
+		}
+		bzero(buffer,BUFFLEN);
+		if ((numbytes=recv(new_fd, buffer, BUFFLEN, 0)) == -1) {
+			perror("recv");
+			exit(1);
+		}
+		if (es_exit(buffer)==0)
+			break;
+		char* pagemsg="HTTP/1.1 200 OK\nDate: Wed, 11 May 2011 19:06:45 GMT\nServer: Apache\nLast-Modified: Wed, 11 May 2011 19:06:47 GMT\nConnection: close\nContent-Length: len\nContent-Type: text/html\n";
+		size=strlen(pagemsg);
+		if ((numbytes=send(new_fd, pagemsg, size, 0)) == -1) {
+			perror("send");
+			exit(1);
+		}
+		pagemsg="<html><head></head>hola</html>";
+		size=strlen(pagemsg);
+		if ((numbytes=send(new_fd, pagemsg, size, 0)) == -1) {
+			perror("send");
+			exit(1);
+		}
+		printf("Se envió un mensaje, pid %d, padre %d\n",getpid(), pid_padre);
+		close(new_fd);
+		return 0;
+		}
+		close(new_fd);
 	}
 	close(sockfd);
 	return 0;
