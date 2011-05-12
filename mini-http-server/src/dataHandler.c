@@ -13,14 +13,11 @@ const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
 
 void procesarPedido(char *string, response *resp){
 
-	response r;
-	char *ruta=(char*)malloc((sizeof(char)*strlen(string))-4);
-	sscanf(string,"GET %s",ruta);
+	resp->path=(char*)malloc((sizeof(char)*strlen(string))-4);
+	sscanf(string,"GET %s",resp->path);
 	//Hasta aca anda ruta esta ok no se por que falla despues al obtener afuera los valores de path y codigo :S
-	r.path=ruta;
-	r.codigo=200;
-	r.mime_type=0;
-	resp=&r;
+	resp->codigo=200;
+	resp->mime_type=0;
 }
 
 
@@ -70,10 +67,10 @@ int push(char *datos, int *longitud,int sockfd)
 /*
 int main(){
 
-	response* r;
-	procesarPedido("GET HOLA",r);
-	printf ("%d\n",r->codigo);
-	printf("%s\n",r->path);
+	response r;
+	procesarPedido("GET HOLA",&r);
+	printf ("%d\n",r.codigo);
+	printf("%s\n",r.path);
 }
 
 */

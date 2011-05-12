@@ -55,14 +55,10 @@ int inicializarServidor(char *ip, int p){
 			exit(1);
 		}
 
-		//response* r;
-		//procesarPedido(buffer,r); :s
-
-		char *ruta=(char*)malloc((sizeof(char)*strlen(buffer))-4);
-		sscanf(buffer,"GET %s",ruta);
-		printf ("ruta: %s",ruta);
+		response r;
+		procesarPedido(buffer,&r);
 		enviarHeader(200,new_fd);
-		enviarHTML(ruta,new_fd);
+		enviarHTML(r.path,new_fd);
 		printf("Se envió un mensaje\n");
 		close(new_fd);
 		return 0;
