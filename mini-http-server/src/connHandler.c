@@ -9,8 +9,9 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "dataHandler.c"
 #define BUFFLEN 1024
-int es_exit(char *msg);
+
 
 int inicializarServidor(char *ip, int p)
 {
@@ -44,37 +45,23 @@ int inicializarServidor(char *ip, int p)
 	new_fd=accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
 		pid_hijo=fork();
 		if(pid_hijo!=0){
+			close(new_fd);
 			continue;
 		}
+		close(sockfd);
+		printf("Se aceptó una conexión\n");
 		bzero(buffer,BUFFLEN);
 		if ((numbytes=recv(new_fd, buffer, BUFFLEN, 0)) == -1) {
 			perror("recv");
 			exit(1);
 		}
-		if (es_exit(buffer)==0)
-			break;
-		char* pagemsg="HTTP/1.1 200 OK\nDate: Wed, 11 May 2011 19:06:45 GMT\nServer: Apache\nLast-Modified: Wed, 11 May 2011 19:06:47 GMT\nConnection: close\nContent-Length: len\nContent-Type: text/html\n";
-		size=strlen(pagemsg);
-		if ((numbytes=send(new_fd, pagemsg, size, 0)) == -1) {
-			perror("send");
-			exit(1);
-		}
-		pagemsg="<html><head></head>hola</html>";
-		size=strlen(pagemsg);
-		if ((numbytes=send(new_fd, pagemsg, size, 0)) == -1) {
-			perror("send");
-			exit(1);
-		}
-		printf("Se envió un mensaje, pid %d, padre %d\n",getpid(), pid_padre);
+
+		enviarHeader(200,new_fd);
+		enviarHTML("index.html",new_fd);
+		printf("Se envió un mensaje");
 		close(new_fd);
 		return 0;
 		}
-		close(new_fd);
-	}
 	close(sockfd);
 	return 0;
-}
-
-int es_exit(char *msg){
-	return strncmp(msg, "exit", 4);
 }
