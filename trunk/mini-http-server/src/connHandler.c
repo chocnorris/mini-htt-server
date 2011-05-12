@@ -54,10 +54,9 @@ int inicializarServidor(char *ip, int p){
 			perror("recv");
 			exit(1);
 		}
-
 		enviarHeader(200,new_fd);
 		enviarHTML("index.html",new_fd);
-		printf("Se envió un mensaje");
+		printf("Se envió un mensaje\n");
 		close(new_fd);
 		return 0;
 		}
