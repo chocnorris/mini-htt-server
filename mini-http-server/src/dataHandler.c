@@ -11,12 +11,18 @@ const int HTTP_FNOTFND=404;
 const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
 
 
-request procesarPedido(char *string){
-	request ret;
-	char *path;
-	sprintf(string,"GET %s",path);
-	return ret;
+void procesarPedido(char *string, response *resp){
+
+	response r;
+	char *ruta=(char*)malloc((sizeof(char)*strlen(string))-4);
+	sscanf(string,"GET %s",ruta);
+	//Hasta aca anda ruta esta ok no se por que falla despues al obtener afuera los valores de path y codigo :S
+	r.path=ruta;
+	r.codigo=200;
+	r.mime_type=0;
+	resp=&r;
 }
+
 
 int enviarHeader(int flag, int sockfd){
 	//flag=codigo de error
@@ -61,3 +67,13 @@ int push(char *datos, int *longitud,int sockfd)
     else return 0;
  }
 
+/*
+int main(){
+
+	response* r;
+	procesarPedido("GET HOLA",r);
+	printf ("%d\n",r->codigo);
+	printf("%s\n",r->path);
+}
+
+*/

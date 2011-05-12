@@ -13,6 +13,7 @@
 
 #define BUFFLEN 1024
 
+
 int inicializarServidor(char *ip, int p){
 	int sockfd,new_fd;
 	struct sockaddr_in my_addr; /* direccion IP y numero de puerto local */
@@ -40,7 +41,6 @@ int inicializarServidor(char *ip, int p){
 	listen(sockfd,10);
 	addr_size= sizeof their_addr;
 	while (1){
-		/* Se le da un nombre al socket */
 		new_fd=accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
 		pid_hijo=fork();
 		if(pid_hijo!=0){
@@ -54,8 +54,15 @@ int inicializarServidor(char *ip, int p){
 			perror("recv");
 			exit(1);
 		}
+
+		//response* r;
+		//procesarPedido(buffer,r); :s
+
+		char *ruta=(char*)malloc((sizeof(char)*strlen(string))-4);
+		sscanf(string,"GET %s",ruta);
+
 		enviarHeader(200,new_fd);
-		enviarHTML("index.html",new_fd);
+		enviarHTML(ruta,new_fd);
 		printf("Se envió un mensaje\n");
 		close(new_fd);
 		return 0;
