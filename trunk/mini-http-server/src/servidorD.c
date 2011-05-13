@@ -69,6 +69,7 @@ int parsePuerto(char *portnum){
 }
 
 int parseIP(char *ipnum){
+	int ret=0;
 	char *ipnumCpy=malloc(strlen(ipnum));
 	strcpy(ipnumCpy,ipnum);
 	char *b1,*b2,*b3,*b4;
@@ -78,21 +79,23 @@ int parseIP(char *ipnum){
 	b4=(char*)strsep(&ipnumCpy,".");
 
 	if(b1==NULL || b2==NULL || b3==NULL || b4==NULL)
-		return 0;
-
-	if(esNum(b1)&&esNum(b2)&&esNum(b3)&&esNum(b4)){
-		int ip1,ip2,ip3,ip4;
-		sscanf(ipnum,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
-		if (ip1>=0 && ip1<=255 &&
-			ip2>=0 && ip2<=255 &&
-			ip3>=0 && ip3<=255 &&
-			ip4>=0 && ip4<=255)
-			return 1;
-		else
-			return 0;
-	}
+		ret= 0;
 	else
-		return 0;
+		if(esNum(b1)&&esNum(b2)&&esNum(b3)&&esNum(b4)){
+			int ip1,ip2,ip3,ip4;
+			sscanf(ipnum,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+			if (ip1>=0 && ip1<=255 &&
+				ip2>=0 && ip2<=255 &&
+				ip3>=0 && ip3<=255 &&
+				ip4>=0 && ip4<=255)
+				ret=1;
+			else
+				ret=0;
+		}
+		else
+			ret=0;
+	free(ipnumCpy);
+	return ret;
 }
 
 void signalHandler(int sig) {
