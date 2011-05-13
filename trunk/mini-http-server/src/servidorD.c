@@ -15,16 +15,11 @@
 /* .h de aplicacion */
 
 /* .c de aplicacion */
-//#include "signalHandler.h"
 #include "connHandler.c"
 
-#define DEMONIO "servidorHTTPd"
-#define PID_FILE "/var/run/servidorHTTPd.pid"
-
-int mododebug=0;
-int PUERTO=80;
-char* IP="127.0.0.1";
-
+int puerto;
+char* ip;
+const char* DEMONIO="servidorHTTP";
 
 /**************************************************************************
     -mostrarAyuda-
@@ -47,39 +42,34 @@ void mostrarAyuda(char* argv[]) {
 
 }
 
-int parsePuerto(char *puerto){
+int parsePuerto(char *portnum){
 	//Conversion segura
-	//long port = strtol(puerto,puerto+sizeof(puerto),10);
-
-	//if (port>=1 && port<=65535) return 1;
-	//else return 0;
-	return 1;
+	int port;
+	sscanf(portnum,":%d",&port);
+	if (port>=1 && port<=65535)
+		return 1;
+	else
+		return 0;
 }
 
-int parseIP(char *ip){
-
-	return 1;
-}
-
-void info(char *msg){
-	printf(" -- %s\n", msg);
-	syslog(LOG_INFO, msg, DEMONIO);
+int parseIP(char *ipnum){
+	int b1,b2,b3,b4;
+	sscanf(ipnum,"%d.%d.%d.%d",&b1,&b2,&b3,&b4);
+	if (b1>=0 && b1<=255 &&
+		b2>=0 && b2<=255 &&
+		b3>=0 && b3<=255 &&
+		b4>=0 && b4<=255)
+		return 1;
+	else
+		return 0;
 }
 
 void signalHandler(int sig) {
 
     switch(sig) {
-        case SIGHUP:
-            syslog(LOG_WARNING, "Recibida señal SIGHUP");
-            break;
-        case SIGTERM:
-            syslog(LOG_WARNING, "Recibida señal SIGTERM");
-            break;
         case SIGUSR1:
-			syslog(LOG_WARNING, "Recibida señal SIGUSR1");
-        default:
-            syslog(LOG_WARNING, "Señal no manejada (%d) %s", strsignal(sig));
-            break;
+			exit(EXIT_SUCCESS);
+			break;
     }
 }
 
@@ -95,15 +85,11 @@ void signalHandler(int sig) {
         EXIT_SUCCESS si finaliza normalmente
 **************************************************************************/
 int main(int argc, char *argv[]) {
-
     //Manejo de señales
 	//ver cuales vamos a manejar
     signal(SIGUSR1, signalHandler);
-    signal(SIGINT, signalHandler);
-    signal(SIGTERM, signalHandler);
-    signal(SIGQUIT, signalHandler);
-    signal(SIGHUP, signalHandler);
     signal(SIGCHLD, SIG_IGN);
+
     if (argc>0 && argc<=4){
     	for (int i=0;i<sizeof(argv);i++){ //Buscar -h
     		if (argv[i]!=0)
@@ -118,19 +104,32 @@ int main(int argc, char *argv[]) {
     	exit(1);
     }
     //Ok con parametros, vemos que tenemos:
-    if (!parsePuerto(argv[2])) printf ("Puerto inválido. Pruebe -h para mas información\n");
-    if (!parseIP(argv[1])) printf ("IP inválida. Pruebe -h para más información\n");
+    if (argc>2 && !parsePuerto(argv[2])){
+    	printf ("Puerto inválido. Pruebe -h para mas información\n");
+    	exit(EXIT_FAILURE);
+    }
+    if (argc>1 && !parseIP(argv[1])){
+    	printf ("IP inválida. Pruebe -h para más información\n");
+    	exit(EXIT_FAILURE);
+    }
 
-    if (argv[1]) IP=argv[1];
-    if (argv[2]) PUERTO=*argv[2];
+    if (argc>1)
+    	ip=argv[1];
+    else
+    	ip="0.0.0.0";
 
-    printf ("-- Iniciando %s en %s:%d\n",DEMONIO,IP,PUERTO);
+    if (argc>2)
+    	sscanf(argv[2],":%d",&puerto);
+    else
+    	puerto=80;
+
+    printf ("-- Iniciando %s en %s:%d\n",DEMONIO,ip,puerto);
 
     /* Process ID y Session ID */
     pid_t pid, sid;
     //daemon(1,1);
     chdir("htdocs/");
-    inicializarServidor(IP,PUERTO);
+    inicializarServidor(ip,puerto);
     printf("terminó un hijo\n");
     exit(EXIT_SUCCESS);
 }
