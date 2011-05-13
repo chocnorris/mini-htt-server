@@ -11,6 +11,7 @@
 #include <string.h>
 #include <assert.h>
 #include <signal.h>
+#include <ctype.h>
 
 /* .h de aplicacion */
 
@@ -42,24 +43,54 @@ void mostrarAyuda(char* argv[]) {
 
 }
 
+int esNum(const char *val){
+    int i = 0, s = 1;
+    for(i = 0; i <strlen(val); i++)
+        if(isdigit(val[i]) == 0)
+            s = 0;
+    return s;
+}
+
 int parsePuerto(char *portnum){
 	//Conversion segura
-	int port;
-	sscanf(portnum,":%d",&port);
-	if (port>=1 && port<=65535)
-		return 1;
+	char* portStr;
+	portStr = portnum+1;
+	printf("Puerto: %s\n",portStr);
+	if(esNum(portStr)){
+		int port;
+		sscanf(portStr,"%d",&port);
+		if (port>=1 && port<=65535)
+			return 1;
+		else
+			return 0;
+	}
 	else
 		return 0;
 }
 
 int parseIP(char *ipnum){
-	int b1,b2,b3,b4;
-	sscanf(ipnum,"%d.%d.%d.%d",&b1,&b2,&b3,&b4);
-	if (b1>=0 && b1<=255 &&
-		b2>=0 && b2<=255 &&
-		b3>=0 && b3<=255 &&
-		b4>=0 && b4<=255)
-		return 1;
+	char *ipnumCpy=malloc(strlen(ipnum));
+	strcpy(ipnumCpy,ipnum);
+	char *b1,*b2,*b3,*b4;
+	b1=(char*)strsep(&ipnumCpy,".");
+	b2=(char*)strsep(&ipnumCpy,".");
+	b3=(char*)strsep(&ipnumCpy,".");
+	b4=(char*)strsep(&ipnumCpy,".");
+
+	if(b1==NULL || b2==NULL || b3==NULL || b4==NULL)
+		return 0;
+
+	if(esNum(b1)&&esNum(b2)&&esNum(b3)&&esNum(b4)){
+		int ip1,ip2,ip3,ip4;
+		sscanf(ipnum,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+		if (ip1>=0 && ip1<=255 &&
+			ip2>=0 && ip2<=255 &&
+			ip3>=0 && ip3<=255 &&
+			ip4>=0 && ip4<=255)
+			return 1;
+		else
+			return 0;
+	}
 	else
 		return 0;
 }
