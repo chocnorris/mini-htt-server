@@ -23,8 +23,14 @@ int inicializarServidor(char *ip, int p){
 	char buffer [BUFFLEN];
 
 	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(80);
-	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	my_addr.sin_port = htons(p);
+	if(strcmp(ip,"0.0.0.0")==0)
+		my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	else
+		if (inet_pton(AF_INET, ip, &(my_addr.sin_addr))==-1){
+			perror("inet_pton");
+			exit (1);
+		}
 	bzero(&(my_addr.sin_zero), 8);
 	/* se crea el socket */
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
