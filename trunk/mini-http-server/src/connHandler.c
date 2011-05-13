@@ -57,8 +57,12 @@ int inicializarServidor(char *ip, int p){
 
 		response r;
 		procesarPedido(buffer,&r);
-		enviarHeader(200,new_fd);
-		enviarHTML(r.path,new_fd);
+		enviarHeader(r.codigo,new_fd);
+		if (r.codigo!=HTTP_FNOTFND)
+			enviarHTML(r.path,new_fd);
+		else
+			enviarHTML("404.html",new_fd);
+
 		printf("Se envió un mensaje\n");
 		close(new_fd);
 		return 0;
