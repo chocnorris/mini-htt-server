@@ -9,31 +9,42 @@ const int HTTP_OK=200;
 const int HTTP_FNOTFND=404;
 
 const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
+const char* HD_HTTP_FNOTFND="HTTP/1.0 404 Not Found\n";
 
 const char* DEF_PATH_1="index.html";
 const char* DEF_PATH_2="index.htm";
 const char* DEF_PATH_3="index.php";
-const char* ERROR_PATH="error";
+const char* ERROR_PATH="404.html";
 
 char* pedidoPrincipal(){
-	char* ret;
 	if(existeArchivo(DEF_PATH_1))
-		strcpy(ret,DEF_PATH_1);
+		return DEF_PATH_1;
 	if(existeArchivo(DEF_PATH_2))
-		strcpy(ret,DEF_PATH_2);
+		return DEF_PATH_2;
 	if(existeArchivo(DEF_PATH_3))
-		strcpy(ret,DEF_PATH_3);
-	strcpy(ret,ERROR_PATH);
-	return ret;
+		return DEF_PATH_3;
+	return ERROR_PATH;
 }
 
 void procesarPedido(char *string, response *resp){
 
 	int largo=sizeof(char)*strlen(string)-4;
 	resp->path=(char*)malloc(largo);
-	if(strncmp(string, "GET http://", 7)){
-		sscanf(string, "GET http://%d.%d.%d.%d/%s", resp->path);
-		if(!existeArchivo(resp->path))
+	if(strncmp(string, "GET http://", 7)==0){
+		sscanf(string, "GET http://%*d.%*d.%*d.%*d/%s", resp->path);
+		if(!existeArchivo(resp->path)){
+			resp->codigo=HTTP_FNOTFND;
+			resp->mime_type=0;
+		}
+		else{
+			resp->codigo=HTTP_OK;
+			resp->mime_type=0;
+		}
+		return;
+	}
+	if(strncmp(string, "GET / ",6)==0){
+		resp->path=pedidoPrincipal();
+		if(strcmp(resp->path,ERROR_PATH)==0)
 			resp->codigo=HTTP_FNOTFND;
 		else{
 			resp->codigo=HTTP_OK;
@@ -41,10 +52,12 @@ void procesarPedido(char *string, response *resp){
 		}
 		return;
 	}
-	if(strncmp(string, "GET /",5)){
-		resp->path=pedidoPrincipal();
-		if(strcmp(resp->path,ERROR_PATH))
+	if(strncmp(string, "GET /", 5)==0){
+		sscanf(string, "GET /%s", resp->path);
+		if(!existeArchivo(resp->path)){
 			resp->codigo=HTTP_FNOTFND;
+			resp->mime_type=0;
+		}
 		else{
 			resp->codigo=HTTP_OK;
 			resp->mime_type=0;
@@ -54,7 +67,7 @@ void procesarPedido(char *string, response *resp){
 }
 
 int existeArchivo(char* path){
-	if(fopen(path,0)==0)
+	if(fopen(path,"r")==0)
 		return 0;
 	else return 1;
 }
@@ -63,6 +76,8 @@ int enviarHeader(int flag, int sockfd){
 	//flag=codigo de error
 	if(flag==HTTP_OK)
 		send(sockfd, HD_HTTP_OK, strlen(HD_HTTP_OK), 0);
+	else if (flag==HTTP_FNOTFND)
+		send(sockfd, HD_HTTP_FNOTFND, strlen(HD_HTTP_FNOTFND), 0);
 	send(sockfd,"\n",1, 0);
 	return 0;
 
@@ -102,13 +117,17 @@ int push(char *datos, int *longitud,int sockfd)
     else return 0;
  }
 
+
+
 /*
 int main(){
 
 	response r;
-	procesarPedido("GET HOLA",&r);
+	procesarPedido("GET http://127.12.3.2/cococ",&r);
 	printf ("%d\n",r.codigo);
 	printf("%s\n",r.path);
+
+
 }
 
 */
