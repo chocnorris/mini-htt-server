@@ -1,5 +1,3 @@
-
-/* .h de sistema */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -12,26 +10,12 @@
 #include <assert.h>
 #include <signal.h>
 #include <ctype.h>
-
-/* .h de aplicacion */
-
-/* .c de aplicacion */
 #include "connHandler.c"
 
 int puerto;
 char* ip;
 const char* DEMONIO="servidorHTTP";
 
-/**************************************************************************
-    -mostrarAyuda-
-    Descripcion:
-        Mostrar ayuda y opciones
-    Parametros:
-        @argc	cantidad de argumentos
-        @argv	lista de argumentos
-    Ret:
-        void
-**************************************************************************/
 void mostrarAyuda(char* argv[]) {
         printf("\nUso: %s [IP] [:PUERTO] [-h]\n", argv[0]);
         printf("  Opciones:\n");
@@ -52,10 +36,8 @@ int esNum(const char *val){
 }
 
 int parsePuerto(char *portnum){
-	//Conversion segura
 	char* portStr;
 	portStr = portnum+1;
-	printf("Puerto: %s\n",portStr);
 	if(esNum(portStr)){
 		int port;
 		sscanf(portStr,"%d",&port);
@@ -107,17 +89,6 @@ void signalHandler(int sig) {
     }
 }
 
-
-/**************************************************************************
-    -main-
-    Descripcion:
-        Funcion principal.
-    Parametros:
-        @argc	cantidad de parametros
-        @argv	lista de parametros
-    Returns:
-        EXIT_SUCCESS si finaliza normalmente
-**************************************************************************/
 int main(int argc, char *argv[]) {
     //Manejo de señales
 	//ver cuales vamos a manejar
