@@ -4,8 +4,26 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <regex.h>
-#include "dataHandler.h"
+#include <unistd.h>
 
+typedef struct req_struct {
+	int codigo;
+	char *path;
+	char *mime_type;
+} response ;
+
+const int HTTP_OK=200;
+const int HTTP_FNOTFND=404;
+
+const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
+const char* HD_HTTP_FNOTFND="HTTP/1.0 404 Not Found\n";
+
+const char* DEF_PATH_1="index.html";
+const char* DEF_PATH_2="index.htm";
+const char* DEF_PATH_3="index.php";
+const char* ERROR_PATH="404.html";
+
+char *ejecutarPHP(char *path, char *vars);
 
  char *extraerDominio(char* string){
 	char* stringCpy=(char*)malloc(sizeof(char)*strlen(string));
@@ -55,6 +73,13 @@ void procesarPedido(char *string, response *resp){
 	}
 	if(strncmp(string, "GET /", 5)==0){
 		sscanf(string, "GET /%s", resp->path);
+		if(strstr(resp->path,".php")){
+			char *tempStr=malloc(strlen(resp->path));
+			strcpy(tempStr,resp->path);
+			char *path=strsep(&tempStr,"?");
+			char *vars=tempStr;
+			resp->path=ejecutarPHP(path,vars);
+		}
 		if(!existeArchivo(resp->path)){
 			resp->codigo=HTTP_FNOTFND;
 			resp->mime_type=0;
@@ -97,33 +122,27 @@ int enviarHTML(char *path, int sockfd){
 	return 0;
 }
 
-int ejecutarPHP(char *path, char* vars){
+char *ejecutarPHP(char *path, char *vars){
+	char *nomTemp=malloc(20);
+	srand(time(NULL));
+	int num=rand();
+	sprintf(nomTemp,"temp%d",num);
+	printf("\n%s\n",nomTemp);
 	pid_t hijo=fork();
 	if(hijo==0){
-		setenv("QUERY_STRING",vars,1);
-		int num=rand();
-		char *nomTemp=malloc(20);
-		sprintf(nomTemp,"temp%d",num);
-		FILE *temp=fopen(nomTemp,"w+");
-		dup2(temp,stdout);
-		execl("php-cgi",path);
-		free(nomTemp);
+		int temp= open(nomTemp, O_RDWR | O_CREAT);
+		if(vars!=NULL)
+			setenv("QUERY_STRING",vars,1);
+		dup2(temp,STDOUT_FILENO);
+		close(temp);
+		execl("/usr/bin/php5-cgi", "/usr/bin/php5-cgi",path,(char *) 0);
+		exit(EXIT_SUCCESS);
 	}
 	if(hijo!=0){
-		int status;
-		wait(&status);
+		wait(NULL);
 	}
+	return nomTemp;
 }
 
-/*
-int main(){
-
-	response r;
-	procesarPedido("GET http://127.12.3.2/cococ",&r);
-	printf ("%d\n",r.codigo);
-	printf("%s\n",r.path);
 
 
-}
-
-*/
