@@ -11,8 +11,7 @@
 #include <signal.h>
 #include <ctype.h>
 #include <arpa/inet.h>
-#include "connHandler.h"
-#include "dataHandler.h"
+#include "connHandler.c"
 
 int puerto;
 char* ip;

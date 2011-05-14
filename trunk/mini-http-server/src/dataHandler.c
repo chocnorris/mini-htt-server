@@ -35,6 +35,31 @@ char *ejecutarPHP(char *path, char *vars);
 	return extract;
 }
 
+ int dominioValido(char *dominio){
+
+	int iplocal=0;
+	struct addrinfo hints, *res, *p;
+	char ip[INET_ADDRSTRLEN];
+	bzero(&(hints), sizeof hints);
+
+	if (getaddrinfo(dominio, NULL, &hints, &res) != 0)
+		return 0;
+	//IPs
+	for(p = res;p != NULL; p = p->ai_next) {
+		void *addr;
+		char *ipver;
+		//Obtener IPs
+		if (p->ai_family == AF_INET) { // IPv4
+			struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
+			addr = &(ipv4->sin_addr);
+		}
+		inet_ntop(p->ai_family, addr, ip, sizeof ip);
+		if (strcmp(ip,"127.0.0.1")==0) iplocal=1;
+	}
+	return iplocal;
+}
+
+
 char* pedidoPrincipal(){
 	if(existeArchivo(DEF_PATH_1))
 		return DEF_PATH_1;
