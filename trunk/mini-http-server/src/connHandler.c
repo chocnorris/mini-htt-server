@@ -36,7 +36,6 @@ int inicializarServidor(char *ip, int p){
 		perror("socket");
 		exit(1);
 	}
-	printf("Creando socket ....\n");
 	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
 		perror("bind");
 		exit(1);
@@ -53,7 +52,6 @@ int inicializarServidor(char *ip, int p){
 			continue;
 		}
 		close(sockfd);
-		printf("Se aceptó una conexión\n");
 		bzero(buffer,BUFFLEN);
 		if ((numbytes=recv(new_fd, buffer, BUFFLEN, 0)) == -1) {
 			perror("recv");
@@ -64,11 +62,9 @@ int inicializarServidor(char *ip, int p){
 		procesarPedido(buffer,&r);
 		enviarHeader(r.codigo,new_fd);
 		if (r.codigo!=HTTP_FNOTFND)
-			enviarHTML(r.path,new_fd);
+			enviarArchivo(r.path,new_fd);
 		else
-			enviarHTML("404.html",new_fd);
-
-		printf("Se envió un mensaje\n");
+			enviarArchivo("404.html",new_fd);
 		close(new_fd);
 		return 0;
 		}
