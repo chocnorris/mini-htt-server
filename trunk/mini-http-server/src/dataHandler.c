@@ -7,6 +7,7 @@
 #include<netdb.h>
 
 
+
 typedef struct req_struct {
 	int codigo;
 	char *path;
@@ -18,6 +19,10 @@ const int HTTP_FNOTFND=404;
 
 const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
 const char* HD_HTTP_FNOTFND="HTTP/1.0 404 Not Found\n";
+
+const char* HD_GIF="Content-Type: image/gif\n";
+const char* HD_PNG="Content-Type: image/png\n";
+const char* HD_JPG="Content-Type: image/jpeg\n";
 
 const char* DEF_PATH_1="index.html";
 const char* DEF_PATH_2="index.htm";
@@ -96,7 +101,6 @@ void procesarPedido(char *string, response *resp){
 		sscanf(string, "GET /%s", resp->path);
 		//nuevo,acomodar
 		char *vars=extraerParametrosPHP(resp->path);
-		printf("%s\n",vars);
 		if(strstr(resp->path,".php")){
 			char *tempStr=malloc(strlen(resp->path));
 			strcpy(tempStr,resp->path);
@@ -122,10 +126,16 @@ int existeArchivo(char* path){
 	else return 1;
 }
 
-int enviarHeader(int flag, int sockfd){
-	//flag=codigo de error
-	if(flag==HTTP_OK)
+int enviarHeader(int flag, int sockfd, char *path){
+	if(flag==HTTP_OK){
 		send(sockfd, HD_HTTP_OK, strlen(HD_HTTP_OK), 0);
+		if(strstr(path,".gif"))
+			send(sockfd, HD_GIF, strlen(HD_GIF), 0);
+		if(strstr(path,".png"))
+			send(sockfd, HD_PNG, strlen(HD_PNG), 0);
+		if(strstr(path,".jpg") || strstr(path,".jpeg"))
+			send(sockfd, HD_JPG, strlen(HD_JPG), 0);
+	}
 	else if (flag==HTTP_FNOTFND)
 		send(sockfd, HD_HTTP_FNOTFND, strlen(HD_HTTP_FNOTFND), 0);
 	send(sockfd,"\n",1, 0);
@@ -133,16 +143,17 @@ int enviarHeader(int flag, int sockfd){
 
 }
 
-int enviarHTML(char *path, int sockfd){
-
-	FILE *html=fopen(path,"r");
+int enviarArchivo(char *path, int sockfd){
+	FILE *src=fopen(path,"r");
 	char *datos=(char *) malloc(sizeof(char)*1024);
-	while (!feof(html)){
-		int cant=fread(datos,sizeof(char),1024,html);
+	while (!feof(src)){
+		int cant=fread(datos,sizeof(char),1024,src);
 		send(sockfd, datos, strlen(datos), 0);
 	}
 	free(datos);
-	fclose(html);
+	fclose(src);
+	if(strstr(path,".temp"))
+		remove(path);
 	return 0;
 }
 
@@ -152,8 +163,7 @@ char *ejecutarPHP(char *path, char *vars){
 	char *nomTemp=malloc(20);
 	srand(time(NULL));
 	int num=rand();
-	sprintf(nomTemp,"temp%d",num);
-	printf("\n%s\n",nomTemp);
+	sprintf(nomTemp,"temp%d.temp",num);
 	pid_t hijo=fork();
 	if(hijo==0){
 		int temp= open(nomTemp, O_RDWR | O_CREAT);
@@ -161,7 +171,7 @@ char *ejecutarPHP(char *path, char *vars){
 			setenv("QUERY_STRING",vars,1);
 		dup2(temp,STDOUT_FILENO);
 		close(temp);
-		execl("/usr/bin/php-cgi", "/usr/bin/php-cgi",path,(char *) 0);
+		execl("/usr/bin/php-cgi", "/usr/bin/php-cgi","-q",path,(char *) 0);
 		exit(EXIT_SUCCESS);
 	}
 	if(hijo!=0){
