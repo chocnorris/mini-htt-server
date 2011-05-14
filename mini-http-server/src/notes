@@ -9,3 +9,7 @@ implementar 1.0->conexiones no persistentes
 manejar codigos de error de HTTP.
 
 JC: arreglé el chequeo de los parametros de entrada, parece bastante robusto
+
+IMPORTANTE!!
+
+gcc -o $servidor servidorD.c  -std=c99 -D_POSIX_C_SOURCE=200112L
