@@ -7,6 +7,15 @@
 #include "dataHandler.h"
 
 
+ char *extraerDominio(char* string){
+	char* stringCpy=(char*)malloc(sizeof(char)*strlen(string));
+	strcpy(stringCpy,string);
+	strsep(&stringCpy,"/");
+	strsep(&stringCpy,"/");
+	char* extract;
+	extract=strsep(&stringCpy,"/");
+	return extract;
+}
 
 char* pedidoPrincipal(){
 	if(existeArchivo(DEF_PATH_1))
