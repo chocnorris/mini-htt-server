@@ -3,6 +3,7 @@
 #include<string.h>
 #include<sys/types.h>
 #include<sys/socket.h>
+#include<arpa/inet.h>
 #include<netdb.h>
 
 
@@ -92,7 +93,6 @@ void procesarPedido(char *string, response *resp){
 	}
 	if(strncmp(string, "GET /", 5)==0){
 
-
 		sscanf(string, "GET /%s", resp->path);
 		//nuevo,acomodar
 		char *vars=extraerParametrosPHP(resp->path);
@@ -169,12 +169,12 @@ char *ejecutarPHP(char *path, char *vars){
 	}
 	return nomTemp;
 }
-
 int dominioValido(char *dominio){
 
 	int iplocal=0;
 	struct addrinfo hints, *res, *p;
 	char ip[INET_ADDRSTRLEN];
+
 	bzero(&(hints), sizeof hints);
 
 	if (getaddrinfo(dominio, NULL, &hints, &res) != 0)
@@ -192,5 +192,6 @@ int dominioValido(char *dominio){
 	}
 	return iplocal;
 }
+
 
 
