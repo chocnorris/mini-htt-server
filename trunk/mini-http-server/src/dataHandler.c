@@ -1,10 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
-#include <regex.h>
-#include <unistd.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netdb.h>
+
 
 typedef struct req_struct {
 	int codigo;
@@ -23,6 +23,7 @@ const char* DEF_PATH_2="index.htm";
 const char* DEF_PATH_3="index.php";
 const char* ERROR_PATH="404.html";
 
+
 char *ejecutarPHP(char *path, char *vars);
 
  char *extraerDominio(char* string){
@@ -34,30 +35,23 @@ char *ejecutarPHP(char *path, char *vars);
 	extract=strsep(&stringCpy,"/");
 	return extract;
 }
+ //nuevo juan
+ char *extraerParametrosPHP(char* string){
+ 	char* stringCpy=(char*)malloc(sizeof(char)*strlen(string));
+ 	strcpy(stringCpy,string);
+ 	if (strncmp(string, "http://",7)==0){ //Asumiendo direccion completa
+ 		strsep(&stringCpy,"/");
+ 		strsep(&stringCpy,"/");
+ 		strsep(&stringCpy,"/");
+ 		strsep(&stringCpy,"?");
+ 		return stringCpy;
+ 	}
+ 	else{
+ 		strsep(&stringCpy,"?");
+ 	}
+ 	return stringCpy;
 
- int dominioValido(char *dominio){
-
-	int iplocal=0;
-	struct addrinfo hints, *res, *p;
-	char ip[INET_ADDRSTRLEN];
-	bzero(&(hints), sizeof hints);
-
-	if (getaddrinfo(dominio, NULL, &hints, &res) != 0)
-		return 0;
-	//IPs
-	for(p = res;p != NULL; p = p->ai_next) {
-		void *addr;
-		char *ipver;
-		//Obtener IPs
-		if (p->ai_family == AF_INET) { // IPv4
-			struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
-			addr = &(ipv4->sin_addr);
-		}
-		inet_ntop(p->ai_family, addr, ip, sizeof ip);
-		if (strcmp(ip,"127.0.0.1")==0) iplocal=1;
-	}
-	return iplocal;
-}
+ }
 
 
 char* pedidoPrincipal(){
@@ -97,12 +91,17 @@ void procesarPedido(char *string, response *resp){
 		return;
 	}
 	if(strncmp(string, "GET /", 5)==0){
+
+
 		sscanf(string, "GET /%s", resp->path);
+		//nuevo,acomodar
+		char *vars=extraerParametrosPHP(resp->path);
+		printf("%s\n",vars);
 		if(strstr(resp->path,".php")){
 			char *tempStr=malloc(strlen(resp->path));
 			strcpy(tempStr,resp->path);
 			char *path=strsep(&tempStr,"?");
-			char *vars=tempStr;
+			//char *vars=tempStr;
 			resp->path=ejecutarPHP(path,vars);
 		}
 		if(!existeArchivo(resp->path)){
@@ -147,6 +146,8 @@ int enviarHTML(char *path, int sockfd){
 	return 0;
 }
 
+
+
 char *ejecutarPHP(char *path, char *vars){
 	char *nomTemp=malloc(20);
 	srand(time(NULL));
@@ -160,7 +161,7 @@ char *ejecutarPHP(char *path, char *vars){
 			setenv("QUERY_STRING",vars,1);
 		dup2(temp,STDOUT_FILENO);
 		close(temp);
-		execl("/usr/bin/php5-cgi", "/usr/bin/php5-cgi",path,(char *) 0);
+		execl("/usr/bin/php-cgi", "/usr/bin/php-cgi",path,(char *) 0);
 		exit(EXIT_SUCCESS);
 	}
 	if(hijo!=0){
@@ -169,5 +170,27 @@ char *ejecutarPHP(char *path, char *vars){
 	return nomTemp;
 }
 
+int dominioValido(char *dominio){
+
+	int iplocal=0;
+	struct addrinfo hints, *res, *p;
+	char ip[INET_ADDRSTRLEN];
+	bzero(&(hints), sizeof hints);
+
+	if (getaddrinfo(dominio, NULL, &hints, &res) != 0)
+		return 0;
+
+	for(p = res;p != NULL; p = p->ai_next) {
+		void *addr;
+		char *ipver;
+		if (p->ai_family == AF_INET) { // IPv4
+			struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
+			addr = &(ipv4->sin_addr);
+		}
+		inet_ntop(p->ai_family, addr, ip, sizeof ip);
+		if (strcmp(ip,"127.0.0.1")==0) iplocal=1;
+	}
+	return iplocal;
+}
 
 
