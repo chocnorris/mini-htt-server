@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include <regex.h>
 #include <math.h>
-
-int main () {
 /*
+int main () {
+
 		char *pattern="hello";
 		regex_t expr;
 		regmatch_t matched[10];
@@ -34,7 +34,7 @@ int main () {
 			printf("%s\n",astring);
 			free(astring);
 		}
-*/
+
 	char** strings = calloc(100, sizeof(char*));
 	int i;
 	for (i = 0; i < 100; ++i)
@@ -48,7 +48,7 @@ int main () {
 
 
 }
-
+*/
 int MatchYObtenerStrings(char *pattern, char* toMatch, char **str){
 	regex_t expr;
 	regmatch_t matched[100];

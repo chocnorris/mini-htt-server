@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include "dataHandler.c"
+#include "dataHandler.h"
 #include "connHandler.h"
 
 #define BUFFLEN 1024

@@ -10,7 +10,9 @@
 #include <assert.h>
 #include <signal.h>
 #include <ctype.h>
-#include "connHandler.c"
+#include <arpa/inet.h>
+#include "connHandler.h"
+#include "dataHandler.h"
 
 int puerto;
 char* ip;
@@ -37,6 +39,8 @@ int esNum(const char *val){
 
 int parsePuerto(char *portnum){
 	char* portStr;
+	if(portnum[0]!=':')
+		return 0;
 	portStr = portnum+1;
 	if(esNum(portStr)){
 		int port;
@@ -51,33 +55,11 @@ int parsePuerto(char *portnum){
 }
 
 int parseIP(char *ipnum){
-	int ret=0;
-	char *ipnumCpy=malloc(strlen(ipnum));
-	strcpy(ipnumCpy,ipnum);
-	char *b1,*b2,*b3,*b4;
-	b1=(char*)strsep(&ipnumCpy,".");
-	b2=(char*)strsep(&ipnumCpy,".");
-	b3=(char*)strsep(&ipnumCpy,".");
-	b4=(char*)strsep(&ipnumCpy,".");
-
-	if(b1==NULL || b2==NULL || b3==NULL || b4==NULL)
-		ret= 0;
+	int i=inet_addr(ipnum);
+	if(i==INADDR_NONE)
+		return 0;
 	else
-		if(esNum(b1)&&esNum(b2)&&esNum(b3)&&esNum(b4)){
-			int ip1,ip2,ip3,ip4;
-			sscanf(ipnum,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
-			if (ip1>=0 && ip1<=255 &&
-				ip2>=0 && ip2<=255 &&
-				ip3>=0 && ip3<=255 &&
-				ip4>=0 && ip4<=255)
-				ret=1;
-			else
-				ret=0;
-		}
-		else
-			ret=0;
-	free(ipnumCpy);
-	return ret;
+		return 1;
 }
 
 void signalHandler(int sig) {
@@ -106,7 +88,7 @@ int main(int argc, char *argv[]) {
     }
     else{
     	printf ("Pruebe -h para mas información.\n");
-    	exit(1);
+    	exit(EXIT_FAILURE);
     }
     //Ok con parametros, vemos que tenemos:
     if (argc>2 && !parsePuerto(argv[2])){
