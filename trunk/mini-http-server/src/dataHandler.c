@@ -5,6 +5,7 @@
 #include<sys/socket.h>
 #include<arpa/inet.h>
 #include<netdb.h>
+#include <errno.h>
 
 
 
@@ -20,9 +21,9 @@ const int HTTP_FNOTFND=404;
 const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
 const char* HD_HTTP_FNOTFND="HTTP/1.0 404 Not Found\n";
 
-const char* HD_GIF="Content-Type: image/gif\n";
-const char* HD_PNG="Content-Type: image/png\n";
-const char* HD_JPG="Content-Type: image/jpeg\n";
+const char* HD_GIF="Content-Type: image/gif;\n";
+const char* HD_PNG="Content-Type: image/png;\n";
+const char* HD_JPG="Content-Type: image/jpeg;\n";
 
 const char* DEF_PATH_1="index.html";
 const char* DEF_PATH_2="index.htm";
@@ -105,7 +106,7 @@ void procesarPedido(char *string, response *resp){
 			char *tempStr=malloc(strlen(resp->path));
 			strcpy(tempStr,resp->path);
 			char *path=strsep(&tempStr,"?");
-			//char *vars=tempStr;
+			char *vars=tempStr;
 			resp->path=ejecutarPHP(path,vars);
 		}
 		if(!existeArchivo(resp->path)){
@@ -145,10 +146,10 @@ int enviarHeader(int flag, int sockfd, char *path){
 
 int enviarArchivo(char *path, int sockfd){
 	FILE *src=fopen(path,"r");
-	char *datos=(char *) malloc(sizeof(char)*1024);
+	unsigned char *datos=(unsigned char *) malloc(sizeof(unsigned char)*1024);
 	while (!feof(src)){
-		int cant=fread(datos,sizeof(char),1024,src);
-		send(sockfd, datos, strlen(datos), 0);
+		int cant=fread(datos,sizeof(unsigned char),1024,src);
+		send(sockfd, datos, sizeof(unsigned char)*cant, 0);
 	}
 	free(datos);
 	fclose(src);
@@ -171,7 +172,10 @@ char *ejecutarPHP(char *path, char *vars){
 			setenv("QUERY_STRING",vars,1);
 		dup2(temp,STDOUT_FILENO);
 		close(temp);
-		execl("/usr/bin/php-cgi", "/usr/bin/php-cgi","-q",path,(char *) 0);
+		if(execl("/usr/bin/php-cgi", "/usr/bin/php-cgi","-q",path,vars,(char *) 0)==-1){
+			perror("execl");
+			exit(EXIT_FAILURE);
+		}
 		exit(EXIT_SUCCESS);
 	}
 	if(hijo!=0){
