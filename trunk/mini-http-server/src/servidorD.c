@@ -24,7 +24,7 @@ void mostrarAyuda(char* argv[]) {
         printf("\tPUERTO\t Puerto en el cual debe escuchar el servidor\n");
         printf("\t-h\t Ayuda\n\n");
 
-        printf("Si no se especifica IP y PUERTO se usa 127.0.0.1:80\n\n");
+        printf("Si no se especifica IP y PUERTO se usan todas las direcciones IP y el puerto 80\n\n");
 
 }
 
@@ -62,12 +62,8 @@ int parseIP(char *ipnum){
 }
 
 void signalHandler(int sig) {
-
-    switch(sig) {
-        case SIGUSR1:
-			exit(EXIT_SUCCESS);
-			break;
-    }
+	printf("El servidor terminó correctamente\n");
+	exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char *argv[]) {
@@ -109,14 +105,11 @@ int main(int argc, char *argv[]) {
     else
     	puerto=80;
 
-    printf ("-- Iniciando %s en %s:%d\n",DEMONIO,ip,puerto);
+    printf ("-- Iniciando %s en %s:%d --\n",DEMONIO,ip,puerto);
 
-    /* Process ID y Session ID */
-    pid_t pid, sid;
-    //daemon(1,1);
+    daemon(1,1);
     chdir("htdocs/");
     inicializarServidor(ip,puerto);
-    printf("terminó un hijo\n");
     exit(EXIT_SUCCESS);
 }
 
