@@ -106,7 +106,7 @@ void procesarPedido(char *string, response *resp){
 			char *tempStr=malloc(strlen(resp->path));
 			strcpy(tempStr,resp->path);
 			char *path=strsep(&tempStr,"?");
-			char *vars=tempStr;
+			char *vars=tempStr; // esta asi porque anaba...para probarlo
 			resp->path=ejecutarPHP(path,vars);
 		}
 		if(!existeArchivo(resp->path)){
