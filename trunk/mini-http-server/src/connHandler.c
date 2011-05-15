@@ -28,17 +28,17 @@ int inicializarServidor(char *ip, int p){
 	else
 		if (inet_pton(AF_INET, ip, &(my_addr.sin_addr))==-1){
 			perror("inet_pton");
-			exit (1);
+			exit (EXIT_FAILURE);
 		}
 	bzero(&(my_addr.sin_zero), 8);
 	/* se crea el socket */
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
 		perror("bind");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	pid_t pid_padre,pid_hijo;
 	pid_padre=getpid();
@@ -60,7 +60,7 @@ int inicializarServidor(char *ip, int p){
 
 		response r;
 		procesarPedido(buffer,&r);
-		enviarHeader(r.codigo,new_fd);
+		enviarHeader(r.codigo,new_fd, r.path);
 		if (r.codigo!=HTTP_FNOTFND)
 			enviarArchivo(r.path,new_fd);
 		else
