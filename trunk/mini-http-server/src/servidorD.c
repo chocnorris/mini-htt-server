@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -11,7 +12,10 @@
 #include <signal.h>
 #include <ctype.h>
 #include <arpa/inet.h>
+#include<sys/socket.h>
 #include "connHandler.c"
+
+
 
 int puerto;
 char* ip;
@@ -72,10 +76,11 @@ int validarHostYPuerto(char *arg, char *ipport[2]){
 	//Separar en HOST:IP
 	char *argcopia2=strdup(arg);
 	char *sup_host=strsep(&argcopia2,":");
+	char unaip[INET_ADDRSTRLEN];
 	char *sup_port=argcopia2;
 	printf("%s %s",sup_host,sup_port);
 
-	if ((strcmp(sup_host,"")!=0) && !dominioValido(sup_host))
+	if ((strcmp(sup_host,"")!=0) && !dominioValido(sup_host, unaip))
 		{
 		printf ("Dominio no existe.\n");
 		return 1;
@@ -84,7 +89,7 @@ int validarHostYPuerto(char *arg, char *ipport[2]){
 		printf ("Puerto invalido\n");
 		return 1;
 	}
-	ipport[0]=sup_host;
+	ipport[0]=&unaip[0];
 	ipport[1]=sup_port;
 }
 
@@ -113,9 +118,6 @@ int main(int argc, char *argv[]) {
     	exit(EXIT_FAILURE);
     }
 
-    char *ip;
-    int puerto;
-
     if (argc==2){
     	char *param=strdup(argv[1]);
     	if (strstr(strdup(param),":")){
@@ -134,11 +136,12 @@ int main(int argc, char *argv[]) {
 			ip="0.0.0.0";
 			sscanf(param,"%d",&puerto);
     		}else{
-    			if (!dominioValido(param)){
+    			char unaip[INET_ADDRSTRLEN];
+    			if (!dominioValido(param, unaip)){
     				printf ("HOST inválido. Pruebe -h para más información\n");
     				exit(EXIT_FAILURE);
     			}
-    			ip=param;
+    			ip=&unaip[0];
     			puerto=80;
     		}
     	}
@@ -150,7 +153,7 @@ int main(int argc, char *argv[]) {
 
     printf ("-- Iniciando %s en %s:%d --\n",DEMONIO,ip,puerto);
 
-    daemon(1,1);
+//    daemon(1,1);
     chdir("htdocs/");
     inicializarServidor(ip,puerto);
     exit(EXIT_SUCCESS);
