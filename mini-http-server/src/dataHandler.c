@@ -186,7 +186,8 @@ char *ejecutarPHP(char *path, char *vars){
 	}
 	return nomTemp;
 }
-int dominioValido(char *dominio){
+
+int dominioValido(char *dominio, char *ipres){
 
 	int iplocal=0;
 	struct addrinfo hints, *res, *p;
@@ -196,7 +197,7 @@ int dominioValido(char *dominio){
 
 	if (getaddrinfo(dominio, NULL, &hints, &res) != 0)
 		return 0;
-
+	//ligamos la primer ip encontrada
 	for(p = res;p != NULL; p = p->ai_next) {
 		void *addr;
 		char *ipver;
@@ -206,6 +207,7 @@ int dominioValido(char *dominio){
 		}
 		inet_ntop(p->ai_family, addr, ip, sizeof ip);
 		if (strcmp(ip,"127.0.0.1")==0) iplocal=1;
+		if (p==res) strcpy(ipres,ip);
 	}
 	return iplocal;
 }
