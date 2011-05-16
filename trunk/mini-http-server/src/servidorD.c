@@ -69,21 +69,8 @@ int parseIP(char *ipnum){
 }
 
 int validarHostYPuerto(char *arg, char *ipport[2]){
-	char* argcopia=(char*)malloc(sizeof(char)*(strlen(arg)));
-	//Eliminar todos los espacios (casos HOST : PUERTO, HOST: PUERTO ...)ç
-	char* p=argcopia;
-	for (int i=0;i<strlen(arg);i++){
-		if (*(arg+i)!=' ') {
-			*p=*(arg+i);
-			p++;
-		}
-	}
-	*p='\0';
-
 	//Separar en HOST:IP
-	char *argcopia2=strdup(argcopia);
-	free(argcopia);
-
+	char *argcopia2=strdup(arg);
 	char *sup_host=strsep(&argcopia2,":");
 	char *sup_port=argcopia2;
 	printf("%s %s",sup_host,sup_port);
@@ -151,11 +138,14 @@ int main(int argc, char *argv[]) {
     				printf ("HOST inválido. Pruebe -h para más información\n");
     				exit(EXIT_FAILURE);
     			}
-    			ip="127.0.0.1";
+    			ip=param;
     			puerto=80;
     		}
     	}
-
+    }
+    if(argc==1){
+    	ip="0.0.0.0";
+    	puerto=80;
     }
 
     printf ("-- Iniciando %s en %s:%d --\n",DEMONIO,ip,puerto);
