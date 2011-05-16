@@ -11,14 +11,15 @@
 <extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 <extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 <extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
 <configuration artifactName="SERVIDO" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.1058422345" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
 <folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1058422345." name="/" resourcePath="">
-<toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.exe.debug.1892335429" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+<toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.exe.debug.1892335429" name="Linux GCC" nonInternalBuilderId="cdt.managedbuild.target.gnu.builder.exe.debug" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 <targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.1856175715" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
-<builder buildPath="${workspace_loc:/SERVIDO/Debug}" errorParsers="" id="cdt.managedbuild.target.gnu.builder.exe.debug.673059894" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
+<builder buildPath="${workspace_loc:/servidorHTTP/Debug}" id="cdt.managedbuild.target.gnu.builder.exe.debug.2075050514" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
 <tool id="cdt.managedbuild.tool.gnu.archiver.base.650448665" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.286084209" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
 <option id="gnu.cpp.compiler.exe.debug.option.optimization.level.741301898" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
@@ -27,6 +28,7 @@
 <tool errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.2140724818" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
 <option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.2075341135" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
 <option id="gnu.c.compiler.exe.debug.option.debugging.level.550691922" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.c.compiler.option.misc.other.20914893" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -std=gnu99" valueType="string"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1183310272" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 <tool errorParsers="org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1910822753" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
@@ -280,7 +282,7 @@
 <parser enabled="true"/>
 </buildOutputProvider>
 <scannerInfoProvider id="specsFile">
-<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c" command="gcc" useDefault="true"/>
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c -std=gnu99" command="gcc" useDefault="true"/>
 <parser enabled="true"/>
 </scannerInfoProvider>
 </profile>
@@ -657,7 +659,7 @@
 <parser enabled="true"/>
 </buildOutputProvider>
 <scannerInfoProvider id="specsFile">
-<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c" command="gcc" useDefault="true"/>
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c -std=gnu99" command="gcc" useDefault="true"/>
 <parser enabled="true"/>
 </scannerInfoProvider>
 </profile>
