@@ -18,7 +18,7 @@ char* ip;
 const char* DEMONIO="servidorHTTP";
 
 void mostrarAyuda(char* argv[]) {
-        printf("\nUso: %s [IP] [:PUERTO] [-h]\n", argv[0]);
+        printf("\nUso: %s [IP][:PUERTO] [-h]\n", argv[0]);
         printf("  Opciones:\n");
         printf("\tIP\t IP sobre la cual debe escuchar el servidor\n");
         printf("\tPUERTO\t Puerto en el cual debe escuchar el servidor\n");
@@ -36,11 +36,18 @@ int esNum(const char *val){
     return s;
 }
 
-int parsePuerto(char *portnum){
-	char* portStr;
-	if(portnum[0]!=':')
-		return 0;
-	portStr = portnum+1;
+/*
+char* separar(char *arg, char ){
+	//PRE: ":" existe en el arg
+	char* argcopia=(char*)malloc(sizeof(char)*strlen(arg));
+	strcpy(argcopia, arg);
+	strsep(&argcopia,":");
+
+}
+*/
+
+
+int parsePuerto(char *portStr){
 	if(esNum(portStr)){
 		int port;
 		sscanf(portStr,"%d",&port);
@@ -59,6 +66,39 @@ int parseIP(char *ipnum){
 		return 0;
 	else
 		return 1;
+}
+
+int validarHostYPuerto(char *arg, char *ipport[2]){
+	char* argcopia=(char*)malloc(sizeof(char)*(strlen(arg)));
+	//Eliminar todos los espacios (casos HOST : PUERTO, HOST: PUERTO ...)ç
+	char* p=argcopia;
+	for (int i=0;i<strlen(arg);i++){
+		if (*(arg+i)!=' ') {
+			*p=*(arg+i);
+			p++;
+		}
+	}
+	*p='\0';
+
+	//Separar en HOST:IP
+	char *argcopia2=strdup(argcopia);
+	free(argcopia);
+
+	char *sup_host=strsep(&argcopia2,":");
+	char *sup_port=argcopia2;
+	printf("%s %s",sup_host,sup_port);
+
+	if ((strcmp(sup_host,"")!=0) && !dominioValido(sup_host))
+		{
+		printf ("Dominio no existe.\n");
+		return 1;
+		}
+	if (!parsePuerto(sup_port)){
+		printf ("Puerto invalido\n");
+		return 1;
+	}
+	ipport[0]=sup_host;
+	ipport[1]=sup_port;
 }
 
 void signalHandler(int sig) {
@@ -85,25 +125,38 @@ int main(int argc, char *argv[]) {
     	printf ("Pruebe -h para mas información.\n");
     	exit(EXIT_FAILURE);
     }
-    //Ok con parametros, vemos que tenemos:
-    if (argc>2 && !parsePuerto(argv[2])){
-    	printf ("Puerto inválido. Pruebe -h para mas información\n");
-    	exit(EXIT_FAILURE);
-    }
-    if (argc>1 && !parseIP(argv[1])){
-    	printf ("IP inválida. Pruebe -h para más información\n");
-    	exit(EXIT_FAILURE);
-    }
 
-    if (argc>1)
-    	ip=argv[1];
-    else
-    	ip="0.0.0.0";
+    char *ip;
+    int puerto;
 
-    if (argc>2)
-    	sscanf(argv[2],":%d",&puerto);
-    else
-    	puerto=80;
+    if (argc==2){
+    	char *param=strdup(argv[1]);
+    	if (strstr(strdup(param),":")){
+    		char** ipport = calloc(2, sizeof(char*));
+    		validarHostYPuerto(param,ipport);
+    		ip=ipport[0];
+    		sscanf(ipport[1],"%d",&puerto);
+    	}
+    	else
+    	{//Solo un puerto o solo un host
+    		if (esNum(param)){
+    			if (!parsePuerto(param)){
+    				printf ("Puerto inválido. Pruebe -h para mas información\n");
+    		    	exit(EXIT_FAILURE);
+    		    }
+			ip="0.0.0.0";
+			sscanf(param,"%d",&puerto);
+    		}else{
+    			if (!dominioValido(param)){
+    				printf ("HOST inválido. Pruebe -h para más información\n");
+    				exit(EXIT_FAILURE);
+    			}
+    			ip="127.0.0.1";
+    			puerto=80;
+    		}
+    	}
+
+    }
 
     printf ("-- Iniciando %s en %s:%d --\n",DEMONIO,ip,puerto);
 
