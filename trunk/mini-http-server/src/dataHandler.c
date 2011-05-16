@@ -24,6 +24,7 @@ const char* HD_HTTP_FNOTFND="HTTP/1.0 404 Not Found\n";
 const char* HD_GIF="Content-Type: image/gif;\n";
 const char* HD_PNG="Content-Type: image/png;\n";
 const char* HD_JPG="Content-Type: image/jpeg;\n";
+const char* HD_HTM="Content-Type: text/html; charset=utf-8\n";
 
 const char* DEF_PATH_1="index.html";
 const char* DEF_PATH_2="index.htm";
@@ -132,10 +133,12 @@ int enviarHeader(int flag, int sockfd, char *path){
 		send(sockfd, HD_HTTP_OK, strlen(HD_HTTP_OK), 0);
 		if(strstr(path,".gif"))
 			send(sockfd, HD_GIF, strlen(HD_GIF), 0);
-		if(strstr(path,".png"))
+		else if(strstr(path,".png"))
 			send(sockfd, HD_PNG, strlen(HD_PNG), 0);
-		if(strstr(path,".jpg") || strstr(path,".jpeg"))
+		else if(strstr(path,".jpg") || strstr(path,".jpeg"))
 			send(sockfd, HD_JPG, strlen(HD_JPG), 0);
+		else if(strstr(path,".html") || strstr(path,".htm")	)
+			send(sockfd, HD_HTM, strlen(HD_HTM), 0);
 	}
 	else if (flag==HTTP_FNOTFND)
 		send(sockfd, HD_HTTP_FNOTFND, strlen(HD_HTTP_FNOTFND), 0);
