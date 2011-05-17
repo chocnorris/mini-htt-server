@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     	{//Solo un puerto o solo un host
     		if (esNum(param)){ //debe referirse a un puerto
     			if (!parsePuerto(param)){
-    				printf ("%s\n%s", PORT_ERRORMSG, HELP_MSG);
+    				printf ("%s\n%s\n", PORT_ERRORMSG, HELP_MSG);
     		    	exit(EXIT_FAILURE);
     		    }
 			ip="0.0.0.0";
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
     		}else{ //debe referirse a un nombre de host
     			char unaip[INET_ADDRSTRLEN];
     			if (!dominioValido(param, unaip)){
-    				printf ("%s\n%s", HOST_ERRORMSG, HELP_MSG);
+    				printf ("%s\n%s\n", HOST_ERRORMSG, HELP_MSG);
     				exit(EXIT_FAILURE);
     			}
     			ip=&unaip[0];
