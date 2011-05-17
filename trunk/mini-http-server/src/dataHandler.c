@@ -161,14 +161,15 @@ int enviarHeader(int flag, int sockfd, char *path){
 	if(flag==HTTP_MNA)
 		send2(sockfd, HD_HTTP_MNA, strlen(HD_HTTP_MNA), 0, "Enviando header.");
 		send2(sockfd, HD_HTM, strlen(HD_HTM), 0, "Enviando HTML.");
-	send(sockfd,"\n",1, 0);
+	send2(sockfd,"\n",1, 0, "Enviando CR.");
 	return 0;
 
 }
 
 int enviarArchivo(char *path, int sockfd){
 	FILE *src=fopen(path,"r");
-	if (src=NULL){
+
+	if (src==NULL){
 		perror("Leyendo archivo.");
 		printf("nro error= %d.\n", errno);
 		exit(EXIT_FAILURE);
