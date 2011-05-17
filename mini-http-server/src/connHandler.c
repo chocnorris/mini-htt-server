@@ -61,10 +61,12 @@ int inicializarServidor(char *ip, int p){
 		response r;
 		procesarPedido(buffer,&r);
 		enviarHeader(r.codigo,new_fd, r.path);
-		if (r.codigo!=HTTP_FNOTFND)
+		if (r.codigo==HTTP_OK)
 			enviarArchivo(r.path,new_fd);
-		else
+		if (r.codigo==HTTP_FNOTFND)
 			enviarArchivo("404.html",new_fd);
+		if (r.codigo==HTTP_MNA)
+			enviarArchivo("405.html",new_fd);
 		close(new_fd);
 		return 0;
 		}
