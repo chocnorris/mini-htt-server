@@ -22,6 +22,7 @@
 #include "dataHandler.c"
 
 #define BUFFLEN 1024
+#define MAX_LISTENBUF 10
 
 /******************************************************************************************************************
 	-inicializarServidor-
@@ -44,6 +45,7 @@ int inicializarServidor(char *ip, int p){
 
 	my_addr.sin_family = AF_INET;
 	my_addr.sin_port = htons(p);
+	/* Establecimiento de IP */
 	if( (strcmp(ip,"0.0.0.0")==0) || (strcmp(ip,"")==0))
 		my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	else
@@ -52,29 +54,36 @@ int inicializarServidor(char *ip, int p){
 			printf("nro error= %d.\n", errno);
 			exit (EXIT_FAILURE);
 		}
+	char *anyaddr=(char*)malloc(sizeof(char)*INET_ADDRSTRLEN);
+	inet_ntop(AF_INET,&(my_addr.sin_addr),anyaddr,sizeof my_addr);
+	printf ("-- Iniciando servidor en %s:%d\n",anyaddr,p);
+
 	bzero(&(my_addr.sin_zero), 8);
-	/* se crea el socket */
+	/* Se crea el socket */
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
 		printf("nro error= %d.\n", errno);
 		exit(EXIT_FAILURE);
 	}
+	/* Ligar a IP:PUERTO */
 	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
 		perror("bind");
 		printf("nro error= %d.\n", errno);
 		exit(EXIT_FAILURE);
 	}
-	pid_t pid_padre,pid_hijo;
-	pid_padre=getpid();
-	listen(sockfd,10);
+	pid_t pid_hijo;
+	listen(sockfd,MAX_LISTENBUF);
 	addr_size= sizeof their_addr;
 	while (1){
+		/* Nueva conexión, se crea un hijo para que la maneje */
 		new_fd=accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
 		pid_hijo=fork();
+		/* En PADRE: descartar socket recién aceptado de hijo y continuar aceptando conexiones */
 		if(pid_hijo!=0){
 			close(new_fd);
 			continue;
 		}
+		/*EN HIJO: Descartar socket de padre (de escucha) y atender solicitud a través del nuevo socket */
 		close(sockfd);
 		bzero(buffer,BUFFLEN);
 		if ((numbytes=recv(new_fd, buffer, BUFFLEN, 0)) == -1) {
@@ -84,16 +93,20 @@ int inicializarServidor(char *ip, int p){
 		}
 
 		response r;
+		/* Procesar solicitud */
 		procesarPedido(buffer,&r);
+		/* Enviar respuesta: HEADER y OBJETO */
 		enviarHeader(r.codigo,new_fd, r.path);
 		if (r.codigo==HTTP_OK)
 			enviarArchivo(r.path,new_fd);
 		if (r.codigo==HTTP_FNOTFND)
-			enviarArchivo("404.html",new_fd);
+			enviarArchivo(ERROR_PATH,new_fd);
 		if (r.codigo==HTTP_MNA)
-			enviarArchivo("405.html",new_fd);
+			enviarArchivo(NOTIMPL_PATH,new_fd);
+		/* Terminar con éxito */
 		close(new_fd);
-		return 0;
+		free(r.path);
+		exit(EXIT_SUCCESS);
 		}
 	close(sockfd);
 	exit(EXIT_SUCCESS);

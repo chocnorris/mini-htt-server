@@ -1,11 +1,12 @@
 
-/*************************************************************************
+/*****************************************************************************
  *
  * 	-dataHandler.c-
  * 	Descripción
  * 		Implementa funciones que involucran el procesamiento y envío de datos.
  *
- *************************************************************************/
+ *****************************************************************************/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -14,8 +15,6 @@
 #include<arpa/inet.h>
 #include<netdb.h>
 #include <errno.h>
-
-
 
 /*
  * response: Estructura que encapsula la información de una respuesta
@@ -28,23 +27,32 @@ typedef struct req_struct {
 	char *path;
 } response ;
 
+
+/* Códigos de respuesta soportados */
+
 const int HTTP_OK=200;
 const int HTTP_FNOTFND=404;
 const int HTTP_MNA=405;
 
+
+/* HEADERs de respuesta soportados */
+
 const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
 const char* HD_HTTP_FNOTFND="HTTP/1.0 404 Not Found\n";
 const char* HD_HTTP_MNA="HTTP/1.0 405 Method Not Allowed\n";
-
 const char* HD_GIF="Content-Type: image/gif;\n";
 const char* HD_PNG="Content-Type: image/png;\n";
 const char* HD_JPG="Content-Type: image/jpeg;\n";
 const char* HD_HTM="Content-Type: text/html; charset=utf-8\n";
 
+
+/* Rutas predefinidas */
+
 const char* DEF_PATH_1="index.html";
 const char* DEF_PATH_2="index.htm";
 const char* DEF_PATH_3="index.php";
 const char* ERROR_PATH="404.html";
+const char* NOTIMPL_PATH="405.html";
 
 
 char *ejecutarPHP(char *path, char *vars);
@@ -132,22 +140,19 @@ void procesarPedido(char *string, response *resp){
 	int largo=sizeof(char)*strlen(string)-4;
 	resp->path=(char*)malloc(largo);
 	if(strncmp(string, "GET http://", 7)==0){
-		sscanf(string, "GET http://%*d.%*d.%*d.%*d/%s", resp->path);
-		if(!existeArchivo(resp->path)){
+		sscanf(string, "GET http://%*s/%s", resp->path);
+		if(!existeArchivo(resp->path))
 			resp->codigo=HTTP_FNOTFND;
-		}
-		else{
+		else
 			resp->codigo=HTTP_OK;
-		}
 		return;
 	}
 	if(strncmp(string, "GET / ",6)==0){
 		resp->path=pedidoPrincipal();
 		if(strcmp(resp->path,ERROR_PATH)==0)
 			resp->codigo=HTTP_FNOTFND;
-		else{
+		else
 			resp->codigo=HTTP_OK;
-		}
 		return;
 	}
 	if(strncmp(string, "GET /", 5)==0){
@@ -183,9 +188,13 @@ void procesarPedido(char *string, response *resp){
  *		0 en caso contrario
  **************************************************************************************/
 int existeArchivo(char* path){
-	if(fopen(path,"r")==0)
+	FILE *a;
+	if ( (a=fopen(path,"r"))==NULL)
 		return 0;
-	else return 1;
+	else {
+		fclose(a);
+		return 1;
+	}
 }
 
 /**************************************************************************************
@@ -337,7 +346,7 @@ int dominioValido(char *dominio, char *ipres){
 
 	if (getaddrinfo(dominio, NULL, &hints, &res) != 0)
 		return 0;
-	//ligamos la primer ip encontrada
+	/* Ligamos la primer ip encontrada */
 	for(p = res;p != NULL; p = p->ai_next) {
 		void *addr;
 		char *ipver;

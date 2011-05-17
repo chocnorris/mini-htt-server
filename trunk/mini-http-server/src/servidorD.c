@@ -169,6 +169,7 @@ int validarHostYPuerto(char *arg, char *ipport[2]){
 
 void signalHandler(int sig) {
 	printf("El servidor terminó correctamente\n");
+	free(ip);
 	exit(EXIT_SUCCESS);
 }
 
@@ -244,9 +245,8 @@ int main(int argc, char *argv[]) {
     	puerto=80;
     }
 
-    printf ("-- Iniciando %s en %s:%d --\n",DEMONIO,ip,puerto);
 
-    daemon(1,1); /* Modo demonio: programa principal en background */
+    //daemon(1,1); /* Modo demonio: programa principal en background */
     chdir("htdocs/");
     inicializarServidor(ip,puerto);
     exit(EXIT_SUCCESS);
