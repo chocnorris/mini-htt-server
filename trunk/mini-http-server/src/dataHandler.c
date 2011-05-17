@@ -326,40 +326,5 @@ char *ejecutarPHP(char *path, char *vars){
 	return nomTemp;
 }
 
-/**************************************************************************************
- *	-dominioValido-
- *	Descripción
- *		Verifica que un nombre de dominio es válido realizando una consulta DNS.
- *		Se obtiene el IP en caso de un nombre válido.
- *	Parámetros
- *		@dominio	Nombre de dominio a consultar
- *		@ipres		IP del nombre de dominio
- *	Retorno
- *		IP asociada al nombre de dominio
- **************************************************************************************/
-int dominioValido(char *dominio, char *ipres){
-
-	struct addrinfo hints, *res, *p;
-	char ip[INET_ADDRSTRLEN];
-
-	bzero(&(hints), sizeof hints);
-
-	if (getaddrinfo(dominio, NULL, &hints, &res) != 0)
-		return 0;
-	/* Ligamos la primer ip encontrada */
-	for(p = res;p != NULL; p = p->ai_next) {
-		void *addr;
-		char *ipver;
-		if (p->ai_family == AF_INET) { // IPv4
-			struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
-			addr = &(ipv4->sin_addr);
-		}
-		inet_ntop(p->ai_family, addr, ip, sizeof ip);
-		if (p==res) strcpy(ipres,ip);
-		return 1;
-	}
-	return 0;
-}
-
 
 
