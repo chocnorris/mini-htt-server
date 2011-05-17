@@ -17,9 +17,14 @@
 
 
 
+const char *HOST_ERRORMSG="Host desconocido.";
+const char *PORT_ERRORMSG="Puerto inválido.";
+const char *HELP_MSG="Pruebe -h para mas información.";
+
+const char* DEMONIO="servidorHTTP";
+
 int puerto;
 char* ip;
-const char* DEMONIO="servidorHTTP";
 
 void mostrarAyuda(char* argv[]) {
         printf("\nUso: %s [IP][:PUERTO] [-h]\n", argv[0]);
@@ -39,17 +44,6 @@ int esNum(const char *val){
             s = 0;
     return s;
 }
-
-/*
-char* separar(char *arg, char ){
-	//PRE: ":" existe en el arg
-	char* argcopia=(char*)malloc(sizeof(char)*strlen(arg));
-	strcpy(argcopia, arg);
-	strsep(&argcopia,":");
-
-}
-*/
-
 
 int parsePuerto(char *portStr){
 	if(esNum(portStr)){
@@ -76,21 +70,23 @@ int validarHostYPuerto(char *arg, char *ipport[2]){
 	//Separar en HOST:IP
 	char *argcopia2=strdup(arg);
 	char *sup_host=strsep(&argcopia2,":");
-	char unaip[INET_ADDRSTRLEN];
 	char *sup_port=argcopia2;
+
+	char* unaip=(char*)malloc(sizeof(char)*INET_ADDRSTRLEN);
 	printf("%s %s",sup_host,sup_port);
 
 	if ((strcmp(sup_host,"")!=0) && !dominioValido(sup_host, unaip))
 		{
-		printf ("Dominio no existe.\n");
-		return 1;
+		printf ("%s\n%s", HOST_ERRORMSG, HELP_MSG);
+		return 0;
 		}
 	if (!parsePuerto(sup_port)){
-		printf ("Puerto invalido\n");
-		return 1;
+		printf ("%s\n%s", PORT_ERRORMSG, HELP_MSG);
+		return 0;
 	}
-	ipport[0]=&unaip[0];
+	ipport[0]=unaip;
 	ipport[1]=sup_port;
+	return 1;
 }
 
 void signalHandler(int sig) {
@@ -118,27 +114,28 @@ int main(int argc, char *argv[]) {
     	exit(EXIT_FAILURE);
     }
 
+
     if (argc==2){
     	char *param=strdup(argv[1]);
     	if (strstr(strdup(param),":")){
-    		char** ipport = calloc(2, sizeof(char*));
-    		validarHostYPuerto(param,ipport);
-    		ip=ipport[0];
+    		char** ipport= calloc(2, sizeof(char*));
+    		if (!validarHostYPuerto(param,ipport)) exit(EXIT_FAILURE);
+    		ip=strdup(ipport[0]);
     		sscanf(ipport[1],"%d",&puerto);
     	}
     	else
     	{//Solo un puerto o solo un host
-    		if (esNum(param)){
+    		if (esNum(param)){ //debe referirse a un puerto
     			if (!parsePuerto(param)){
-    				printf ("Puerto inválido. Pruebe -h para mas información\n");
+    				printf ("%s\n%s", PORT_ERRORMSG, HELP_MSG);
     		    	exit(EXIT_FAILURE);
     		    }
 			ip="0.0.0.0";
 			sscanf(param,"%d",&puerto);
-    		}else{
+    		}else{ //debe referirse a un nombre de host
     			char unaip[INET_ADDRSTRLEN];
     			if (!dominioValido(param, unaip)){
-    				printf ("HOST inválido. Pruebe -h para más información\n");
+    				printf ("%s\n%s", HOST_ERRORMSG, HELP_MSG);
     				exit(EXIT_FAILURE);
     			}
     			ip=&unaip[0];
