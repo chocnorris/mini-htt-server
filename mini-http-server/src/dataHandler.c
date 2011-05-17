@@ -199,7 +199,6 @@ char *ejecutarPHP(char *path, char *vars){
 
 int dominioValido(char *dominio, char *ipres){
 
-	int iplocal=0;
 	struct addrinfo hints, *res, *p;
 	char ip[INET_ADDRSTRLEN];
 
@@ -216,11 +215,10 @@ int dominioValido(char *dominio, char *ipres){
 			addr = &(ipv4->sin_addr);
 		}
 		inet_ntop(p->ai_family, addr, ip, sizeof ip);
-		printf(ip);
-		if (strcmp(ip,"127.0.0.1")==0) iplocal=1;
 		if (p==res) strcpy(ipres,ip);
+		return 1;
 	}
-	return iplocal;
+	return 0;
 }
 
 
