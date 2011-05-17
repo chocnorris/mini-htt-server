@@ -133,25 +133,34 @@ int existeArchivo(char* path){
 	else return 1;
 }
 
+void send2(int fd, const void* buf, size_t n, int flags, char *action){
+	if (send(fd,buf,n,flags)==-1){
+		perror(action);
+		printf("nro error= %d.\n", errno);
+		exit(EXIT_FAILURE);
+	}
+}
+
 int enviarHeader(int flag, int sockfd, char *path){
 	if(flag==HTTP_OK){
-		send(sockfd, HD_HTTP_OK, strlen(HD_HTTP_OK), 0);
+		send2(sockfd, HD_HTTP_OK, strlen(HD_HTTP_OK), 0,"Enviando header.");
+
 		if(strstr(path,".gif"))
-			send(sockfd, HD_GIF, strlen(HD_GIF), 0);
+			send2(sockfd, HD_GIF, strlen(HD_GIF), 0,"Enviando GIF.");
 		else if(strstr(path,".png"))
-			send(sockfd, HD_PNG, strlen(HD_PNG), 0);
+			send2(sockfd, HD_PNG, strlen(HD_PNG), 0,"Enviando PNG.");
 		else if(strstr(path,".jpg") || strstr(path,".jpeg"))
-			send(sockfd, HD_JPG, strlen(HD_JPG), 0);
-		else if(strstr(path,".html") || strstr(path,".htm")	)
-			send(sockfd, HD_HTM, strlen(HD_HTM), 0);
+			send2(sockfd, HD_JPG, strlen(HD_JPG), 0, "Enviando JPG.");
+		else if(strstr(path,".html") || strstr(path,".htm") || strstr(path,".temp")	)
+			send2(sockfd, HD_HTM, strlen(HD_HTM), 0, "Enviando HTML.");
 	}
 	if (flag==HTTP_FNOTFND){
-		send(sockfd, HD_HTTP_FNOTFND, strlen(HD_HTTP_FNOTFND), 0);
-		send(sockfd, HD_HTM, strlen(HD_HTM), 0);
+		send2(sockfd, HD_HTTP_FNOTFND, strlen(HD_HTTP_FNOTFND), 0, "Enviando header.");
+		send2(sockfd, HD_HTM, strlen(HD_HTM), 0, "Enviando HTML.");
 	}
 	if(flag==HTTP_MNA)
-		send(sockfd, HD_HTTP_MNA, strlen(HD_HTTP_MNA), 0);
-		send(sockfd, HD_HTM, strlen(HD_HTM), 0);
+		send2(sockfd, HD_HTTP_MNA, strlen(HD_HTTP_MNA), 0, "Enviando header.");
+		send2(sockfd, HD_HTM, strlen(HD_HTM), 0, "Enviando HTML.");
 	send(sockfd,"\n",1, 0);
 	return 0;
 
@@ -159,10 +168,15 @@ int enviarHeader(int flag, int sockfd, char *path){
 
 int enviarArchivo(char *path, int sockfd){
 	FILE *src=fopen(path,"r");
+	if (src=NULL){
+		perror("Leyendo archivo.");
+		printf("nro error= %d.\n", errno);
+		exit(EXIT_FAILURE);
+	}
 	unsigned char *datos=(unsigned char *) malloc(sizeof(unsigned char)*1024);
 	while (!feof(src)){
 		int cant=fread(datos,sizeof(unsigned char),1024,src);
-		send(sockfd, datos, sizeof(unsigned char)*cant, 0);
+		send2(sockfd, datos, sizeof(unsigned char)*cant, 0,"Enviando archivo.");
 	}
 	free(datos);
 	fclose(src);
