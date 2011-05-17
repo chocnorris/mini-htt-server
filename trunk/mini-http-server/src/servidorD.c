@@ -72,20 +72,24 @@ int validarHostYPuerto(char *arg, char *ipport[2]){
 	char *sup_host=strsep(&argcopia2,":");
 	char *sup_port=argcopia2;
 
-	char* unaip=(char*)malloc(sizeof(char)*INET_ADDRSTRLEN);
 	printf("%s %s",sup_host,sup_port);
 
-	if ((strcmp(sup_host,"")!=0) && !dominioValido(sup_host, unaip))
+	if (!parseIP(sup_host)){ //debe ser un nombre de dominio
+		char* unaip=(char*)malloc(sizeof(char)*INET_ADDRSTRLEN);
+		if ((strcmp(sup_host,"")!=0) && !dominioValido(sup_host, unaip))
 		{
-		printf ("%s\n%s", HOST_ERRORMSG, HELP_MSG);
-		return 0;
+			printf ("%s\n%s", HOST_ERRORMSG, HELP_MSG);
+			return 0;
 		}
+		ipport[0]=unaip;
+	}
+	else ipport[0]=sup_host;
+
 	if (!parsePuerto(sup_port)){
 		printf ("%s\n%s", PORT_ERRORMSG, HELP_MSG);
 		return 0;
 	}
-	ipport[0]=unaip;
-	ipport[1]=sup_port;
+	else ipport[1]=sup_port;
 	return 1;
 }
 
