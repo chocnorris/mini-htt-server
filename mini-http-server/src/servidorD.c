@@ -1,3 +1,11 @@
+/********************************************************************************************
+ *
+ * -servidorHTTP.c-
+ * Descripción:
+ * 		Contiene la función main() con funciones para la validación de parametros al programa
+ * 		principal.
+ *
+ ********************************************************************************************/
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -26,6 +34,15 @@ const char* DEMONIO="servidorHTTP";
 int puerto;
 char* ip;
 
+/**************************************************************************************
+ *	-mostrarAyuda-
+ *	Descripción
+ *		muestra una ayuda al usuario
+ *	Parámetros
+ *		@argv	argumentos pasados al programa principal
+ *	Retorno
+ *		void
+ **************************************************************************************/
 void mostrarAyuda(char* argv[]) {
         printf("\nUso: %s [IP][:PUERTO] [-h]\n", argv[0]);
         printf("  Opciones:\n");
@@ -33,10 +50,22 @@ void mostrarAyuda(char* argv[]) {
         printf("\tPUERTO\t Puerto en el cual debe escuchar el servidor\n");
         printf("\t-h\t Ayuda\n\n");
 
-        printf("Si no se especifica IP y PUERTO se usan todas las direcciones IP y el puerto 80\n\n");
+        printf("Si sólo se especifica IP se usa el puerto 80 por defecto\n");
+        printf("Si sólo se especifica PUERTO se usa cualquier IP local por defecto \n");
+        printf("Si no se especifica nada se usa cualquier IP local y puerto 80 por defecto\n");
 
 }
 
+/**************************************************************************************
+ *	-esNum-
+ *	Descripción
+ *		Verifica si una cadena está representando un número.
+ *	Parámetros
+ *		@val cadena a verificar
+ *	Retorno
+ *		0 si val es un número
+ *		1 en caso contrario
+ **************************************************************************************/
 int esNum(const char *val){
     int i = 0, s = 1;
     for(i = 0; i <strlen(val); i++)
@@ -45,6 +74,16 @@ int esNum(const char *val){
     return s;
 }
 
+/**************************************************************************************
+ *	-parsePuerto-
+ *	Descripción
+ *		Dado un puerto se verifica si es válido según la RFC1700
+ *	Parámetros
+ *		@portStr	Cadena a verificar
+ *	Retorno
+ *		1 si se valida el puerto
+ *		0 en caso contrario
+ **************************************************************************************/
 int parsePuerto(char *portStr){
 	if(esNum(portStr)){
 		int port;
@@ -58,6 +97,16 @@ int parsePuerto(char *portStr){
 		return 0;
 }
 
+/**************************************************************************************
+ *	-parseIP-
+ *	Descripción
+ *		Dada una IP verifica si es válida según IPv4.
+ *	Parámetros
+ *		@ipnum	Cadena que contiene la IP a verificar.
+ *	Retorno
+ *		1 en caso de que se valide la IP
+ *		0 en caso contrario
+ **************************************************************************************/
 int parseIP(char *ipnum){
 	int i=inet_addr(ipnum);
 	if(i==INADDR_NONE)
@@ -66,6 +115,21 @@ int parseIP(char *ipnum){
 		return 1;
 }
 
+/**************************************************************************************
+ *	-validarHostYPuerto-
+ *	Descripción
+ *		Dada una cadena de la forma "HOST:PUERTO" se obtiene por separado HOST y PUERTO.
+ *		PUERTO se valida.
+ *		Si HOST no es una IP se lo toma como nombre de dominio, se verifica y obtiene
+ *		la IP asociada a él.
+ *		Si HOST es una IP se posterga la validación hasta el momento de asignar la IP
+ *		en inicializarServidor.
+ *	Parámetros
+ *		@arg	1er parámetro de entrada al programa. Es Precondición que éste contiene
+ *				un ":" como separador.
+ *	Retorno
+ *		Arreglo conteniendo IP y PUERTO
+ **************************************************************************************/
 int validarHostYPuerto(char *arg, char *ipport[2]){
 	//Separar en HOST:IP
 	char *argcopia2=strdup(arg);
@@ -93,19 +157,43 @@ int validarHostYPuerto(char *arg, char *ipport[2]){
 	return 1;
 }
 
+/**************************************************************************************
+ *	-signalHandler-
+ *	Descripción
+ *		Manejador de señales del sistema operativo.
+ *	Parámetros
+ *		@sig	Número de señal recibida.
+ *	Retorno
+ *		void
+ **************************************************************************************/
+
 void signalHandler(int sig) {
 	printf("El servidor terminó correctamente\n");
 	exit(EXIT_SUCCESS);
 }
 
+/**************************************************************************************
+ *	-main-
+ *	Descripción
+ *		Función main llamada al ejecutar el programa.
+ *		Una finalización con éxito es una interrupción del usuario o que el programa
+ *		llegue a la instrucción final.
+ *	Parámetros
+ *		@argc	Cantidad de parámetros de entrada
+ *		@argv	Parámetros de entrada
+ *	Retorno
+ *		EXIT_SUCCESS si finaliza con éxito.
+ *		EXIT_FAILURE en caso contrario.
+ **************************************************************************************/
 int main(int argc, char *argv[]) {
-    //Manejo de señales
-	//ver cuales vamos a manejar
+
+	/* Manejar señales */
     signal(SIGUSR1, signalHandler);
     signal(SIGCHLD, SIG_IGN);
 
-    if (argc>0 && argc<=4){
-    	for (int i=0;i<sizeof(argv);i++){ //Buscar -h
+    if (argc>0 && argc<=3){
+    	/* Buscar -h para mostrar ayuda y salir */
+    	for (int i=0;i<sizeof(argv);i++){
     		if (argv[i]!=0)
     			if (strcmp(argv[i],"-h")==0){
     				mostrarAyuda(argv);
@@ -113,7 +201,7 @@ int main(int argc, char *argv[]) {
     			}
     	}
     }
-    else{
+    else{ /* Número de argumentos inválido, sugerir ayuda y salir */
     	printf ("%s\n",HELP_MSG);
     	exit(EXIT_FAILURE);
     }
@@ -122,21 +210,25 @@ int main(int argc, char *argv[]) {
     if (argc==2){
     	char *param=strdup(argv[1]);
     	if (strstr(strdup(param),":")){
+    		/* Se verifica precondicion de validarHostYPuerto: HOST:PUERTO */
     		char** ipport= calloc(2, sizeof(char*));
     		if (!validarHostYPuerto(param,ipport)) exit(EXIT_FAILURE);
     		ip=strdup(ipport[0]);
     		sscanf(ipport[1],"%d",&puerto);
     	}
     	else
-    	{//Solo un puerto o solo un host
-    		if (esNum(param)){ //debe referirse a un puerto
+    	{
+    	/* No es HOST:PUERTO, soloun HOST o solo PUERTO */
+    		if (esNum(param)){
+    			/* Debe ser solo PUERTO, establecer cualquier IP local */
     			if (!parsePuerto(param)){
     				printf ("%s\n%s\n", PORT_ERRORMSG, HELP_MSG);
     		    	exit(EXIT_FAILURE);
     		    }
 			ip="0.0.0.0";
 			sscanf(param,"%d",&puerto);
-    		}else{ //debe referirse a un nombre de host
+    		}else{
+    			/* Debe ser solo HOST, establecer puerto por defecto */
     			char unaip[INET_ADDRSTRLEN];
     			if (!dominioValido(param, unaip)){
     				printf ("%s\n%s\n", HOST_ERRORMSG, HELP_MSG);
@@ -152,9 +244,9 @@ int main(int argc, char *argv[]) {
     	puerto=80;
     }
 
-    printf ("\n-- Iniciando %s en %s:%d --\n",DEMONIO,ip,puerto);
+    printf ("-- Iniciando %s en %s:%d --\n",DEMONIO,ip,puerto);
 
-    daemon(1,1);
+    daemon(1,1); /* Modo demonio: programa principal en background */
     chdir("htdocs/");
     inicializarServidor(ip,puerto);
     exit(EXIT_SUCCESS);
