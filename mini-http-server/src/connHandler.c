@@ -28,16 +28,19 @@ int inicializarServidor(char *ip, int p){
 	else
 		if (inet_pton(AF_INET, ip, &(my_addr.sin_addr))==-1){
 			perror("inet_pton");
+			printf("nro error= %d.\n", errno);
 			exit (EXIT_FAILURE);
 		}
 	bzero(&(my_addr.sin_zero), 8);
 	/* se crea el socket */
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
+		printf("nro error= %d.\n", errno);
 		exit(EXIT_FAILURE);
 	}
 	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
 		perror("bind");
+		printf("nro error= %d.\n", errno);
 		exit(EXIT_FAILURE);
 	}
 	pid_t pid_padre,pid_hijo;
@@ -54,8 +57,9 @@ int inicializarServidor(char *ip, int p){
 		close(sockfd);
 		bzero(buffer,BUFFLEN);
 		if ((numbytes=recv(new_fd, buffer, BUFFLEN, 0)) == -1) {
-			perror("recv");
-			exit(1);
+			perror("Recibiendo solicitud http");
+			printf("nro error= %d.\n", errno);
+			exit(EXIT_FAILURE);
 		}
 
 		response r;
