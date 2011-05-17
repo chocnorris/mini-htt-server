@@ -1,4 +1,15 @@
 
+/********************************************************************************************
+ *
+ * 	-connHandler.c-
+ * 	Descripción
+ * 		Implementa el control de la conexión:
+ *	 	Poner el proceso a la escucha y aceptar la conexión con los clientes,
+ * 	 	creando un hijo por cada conexión aceptada.
+ * 		Cada hijo recibe una solicitud y usando dataHandler.c envía la respuesta que corresponde.
+ *
+ ********************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -12,7 +23,17 @@
 
 #define BUFFLEN 1024
 
-
+/******************************************************************************************************************
+	-inicializarServidor-
+    Descripción
+        Poner servidor a la espera de conexiones y manejar la interacción básica para la respuesta de solicitudes.
+    Parametros
+        @ip	IP en la cual escuchar.
+        @p	PUERTO en el cual escuchar.
+    Retorno
+		EXIT_SUCCESS si termina con éxito.
+		EXIT_FAILURE en caso contrario.
+ ******************************************************************************************************************/
 int inicializarServidor(char *ip, int p){
 	int sockfd,new_fd;
 	struct sockaddr_in my_addr; /* direccion IP y numero de puerto local */
@@ -75,5 +96,5 @@ int inicializarServidor(char *ip, int p){
 		return 0;
 		}
 	close(sockfd);
-	return 0;
+	exit(EXIT_SUCCESS);
 }
