@@ -109,12 +109,12 @@ int main(int argc, char *argv[]) {
     		if (argv[i]!=0)
     			if (strcmp(argv[i],"-h")==0){
     				mostrarAyuda(argv);
-    				exit(1);
+    				exit(EXIT_FAILURE);
     			}
     	}
     }
     else{
-    	printf ("Pruebe -h para mas información.\n");
+    	printf ("%s\n",HELP_MSG);
     	exit(EXIT_FAILURE);
     }
 
@@ -152,9 +152,9 @@ int main(int argc, char *argv[]) {
     	puerto=80;
     }
 
-    printf ("-- Iniciando %s en %s:%d --\n",DEMONIO,ip,puerto);
+    printf ("\n-- Iniciando %s en %s:%d --\n",DEMONIO,ip,puerto);
 
-//    daemon(1,1);
+    daemon(1,1);
     chdir("htdocs/");
     inicializarServidor(ip,puerto);
     exit(EXIT_SUCCESS);
