@@ -139,14 +139,6 @@ void procesarPedido(char *string, response *resp){
 
 	int largo=sizeof(char)*strlen(string)-4;
 	resp->path=(char*)malloc(largo);
-	if(strncmp(string, "GET http://", 7)==0){
-		sscanf(string, "GET http://%*s/%s", resp->path);
-		if(!existeArchivo(resp->path))
-			resp->codigo=HTTP_FNOTFND;
-		else
-			resp->codigo=HTTP_OK;
-		return;
-	}
 	if(strncmp(string, "GET / ",6)==0){
 		resp->path=pedidoPrincipal();
 		if(strcmp(resp->path,ERROR_PATH)==0)
