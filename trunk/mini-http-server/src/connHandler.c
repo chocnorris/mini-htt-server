@@ -23,7 +23,7 @@ int inicializarServidor(char *ip, int p){
 
 	my_addr.sin_family = AF_INET;
 	my_addr.sin_port = htons(p);
-	if(strcmp(ip,"0.0.0.0")==0)
+	if( (strcmp(ip,"0.0.0.0")==0) || (strcmp(ip,"")==0))
 		my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	else
 		if (inet_pton(AF_INET, ip, &(my_addr.sin_addr))==-1){
