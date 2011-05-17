@@ -181,10 +181,9 @@ char *ejecutarPHP(char *path, char *vars){
 	pid_t hijo=fork();
 	if(hijo==0){
 		int temp= open(nomTemp, O_RDWR | O_CREAT);
-		if(vars!=NULL)
-			setenv("QUERY_STRING",vars,1);
 		dup2(temp,STDOUT_FILENO);
 		close(temp);
+		freopen("/dev/null", "w", stderr);
 		if(execl("/usr/bin/php-cgi", "/usr/bin/php-cgi","-q",path,vars,(char *) 0)==-1){
 			perror("execl");
 			exit(EXIT_FAILURE);
