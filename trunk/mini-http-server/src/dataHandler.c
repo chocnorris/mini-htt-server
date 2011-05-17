@@ -17,9 +17,11 @@ typedef struct req_struct {
 
 const int HTTP_OK=200;
 const int HTTP_FNOTFND=404;
+const int HTTP_MNA=405;
 
 const char* HD_HTTP_OK="HTTP/1.0 200 OK\n";
 const char* HD_HTTP_FNOTFND="HTTP/1.0 404 Not Found\n";
+const char* HD_HTTP_MNA="HTTP/1.0 405 Method Not Allowed\n";
 
 const char* HD_GIF="Content-Type: image/gif;\n";
 const char* HD_PNG="Content-Type: image/png;\n";
@@ -120,6 +122,9 @@ void procesarPedido(char *string, response *resp){
 		}
 		return;
 	}
+	resp->codigo=HTTP_MNA;
+	resp->mime_type=0;
+
 }
 
 int existeArchivo(char* path){
@@ -140,8 +145,13 @@ int enviarHeader(int flag, int sockfd, char *path){
 		else if(strstr(path,".html") || strstr(path,".htm")	)
 			send(sockfd, HD_HTM, strlen(HD_HTM), 0);
 	}
-	else if (flag==HTTP_FNOTFND)
+	if (flag==HTTP_FNOTFND){
 		send(sockfd, HD_HTTP_FNOTFND, strlen(HD_HTTP_FNOTFND), 0);
+		send(sockfd, HD_HTM, strlen(HD_HTM), 0);
+	}
+	if(flag==HTTP_MNA)
+		send(sockfd, HD_HTTP_MNA, strlen(HD_HTTP_MNA), 0);
+		send(sockfd, HD_HTM, strlen(HD_HTM), 0);
 	send(sockfd,"\n",1, 0);
 	return 0;
 
@@ -206,6 +216,7 @@ int dominioValido(char *dominio, char *ipres){
 			addr = &(ipv4->sin_addr);
 		}
 		inet_ntop(p->ai_family, addr, ip, sizeof ip);
+		printf(ip);
 		if (strcmp(ip,"127.0.0.1")==0) iplocal=1;
 		if (p==res) strcpy(ipres,ip);
 	}
