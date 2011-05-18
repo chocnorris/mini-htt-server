@@ -57,25 +57,6 @@ const char* NOTIMPL_PATH="405.html";
 
 char *ejecutarPHP(char *path, char *vars);
 
-/***************************************************************
- * 	-extraerDominio-
- * Descripción:
- * 		Dada una cadena en de la forma "http://dir/" extrae <dir>
- * Parámetros
- * 		@string		Cadena de la cual extraer <dir>
- * Retorno:
- * 		<dir>
- ***************************************************************/
-char *extraerDominio(char* string){
-	char* stringCpy=(char*)malloc(sizeof(char)*strlen(string));
-	strcpy(stringCpy,string);
-	strsep(&stringCpy,"/");
-	strsep(&stringCpy,"/");
-	char* extract;
-	extract=strsep(&stringCpy,"/");
-	return extract;
-}
-
 /********************************************************************
  * 	-extraerParametrosPHP-
  * 	Descripción
