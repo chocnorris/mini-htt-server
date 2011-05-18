@@ -173,8 +173,8 @@ int existeArchivo(char* path){
 /**************************************************************************************
  *	-send2-
  *	Descripción
- *		Extensión de send() para generalizar diagnóstico de errores en esta llamada.
- *		En caso de que la llamada a send() felle se termina el llamador y se reporta el
+ *		Extensión de send() para generalizar diagnóstico de errores.
+ *		En caso de que la llamada a send() falle se termina el llamador y se reporta el
  *		tipo de error junto a la acción que se estaba llevando a cabo.
  *	Parámetros
  *		@fd
