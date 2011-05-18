@@ -47,7 +47,7 @@ Responsabilidades principales
 
 servidorD.c
 	
-void mostrarAyuda(char* argv[]) 
+{{{void mostrarAyuda(char* argv[]) }}}
 
 Muestra una ayuda al usuario.
 
