@@ -299,7 +299,7 @@ char *ejecutarPHP(char *path, char *vars){
 	char *nomTemp=malloc(20);
 	srand(time(NULL));
 	int num=rand();
-	sprintf(nomTemp,"temp%d.temp",num);
+	sprintf(nomTemp,"temp%d.temp",num,S_IRWXU);
 	pid_t hijo=fork();
 	if(hijo==0){
 		int temp= open(nomTemp, O_RDWR | O_CREAT);
