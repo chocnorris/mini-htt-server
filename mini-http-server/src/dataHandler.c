@@ -299,10 +299,10 @@ char *ejecutarPHP(char *path, char *vars){
 	char *nomTemp=malloc(20);
 	srand(time(NULL));
 	int num=rand();
-	sprintf(nomTemp,"temp%d.temp",num,S_IRWXU);
+	sprintf(nomTemp,"temp%d.temp",num);
 	pid_t hijo=fork();
 	if(hijo==0){
-		int temp= open(nomTemp, O_RDWR | O_CREAT);
+		int temp= open(nomTemp, O_RDWR | O_CREAT, S_IRWXU);
 		dup2(temp,STDOUT_FILENO);
 		close(temp);
 		freopen("/dev/null", "w", stderr);
