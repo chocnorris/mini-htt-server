@@ -280,7 +280,12 @@ int main(int argc, char *argv[]) {
 
 
     daemon(1,1); /* Modo demonio: programa principal en background */
-    chdir("htdocs/");
+    if ( (chdir("htdocs/")==-1) ){
+    	perror("Cambiando a /htdocs");
+    	printf("nro error= %d.\n", errno);
+    	printf ("Cree la carpeta htdocs en la carpeta donde está ubicado el ejecutable y ponga allí los documentos.\n");
+    	exit(EXIT_FAILURE);
+    }
     inicializarServidor(ip,puerto);
     exit(EXIT_SUCCESS);
 }
