@@ -10,23 +10,24 @@ Se escribieron tres archivos fuente en los cuales se implementaron las funciones
 
 = Funcionamiento del programa =
 
-Eecución
+== Eecución ==
 La sintaxis de invocación es la siguiente:
 servidorHTTP [IP[:puerto]] | [puerto] | [-h]
 NOTA: para poder ligar el servidor al puerto por defecto (80) será necesario ejecutarlo como root.
 Una vez que el servidor es ejecutado, se validan los parámetros de entrada, chequeando que tengan la sintaxis correcta. De ser así se lleva el proceso a backrground (demonio), luego se intentan ligar el IP y el puerto, si esta operación tiene éxito, se crea un welcome socket en el puerto elegido (por defecto 80) y el servidor entra en un lazo infinito en el cual irá atendiendo los requerimientos a través del mecanismo de creación de hijos fork().
 Cuando el programa entra en el ciclo se bloquea en la sentencia accept() esperando un nuevo requerimiento, al arribar uno el programa hace fork(), el pedido es atendido por el hijo creado y el programa principal se vuelve a bloquear en accept().
 
-= Manejo de los pedidos =
+== Manejo de los pedidos ==
 Luego de el fork(), el hijo está en condición de atender el requerimiento, para esto realiza un recv() en el cual se recibirá el HTTP Request correspondiente. En una primera instancia se procesa el pedido, verificando que tenga la sintaxis correcta y que corresponda con el único método implementado (HTTP GET) para luego conseguir el archivo correspondiente y enviarlo.
 
-= Envío de archivos =
+== Envío de archivos ==
 Para enviar un archivo se busca el mismo en el directorio de trabajo, en este caso htdocs, si no se especifica ninguno se buscarán index.html, index.htm, index.php, en ese orden. Si se trata de un archivo con extensión php se invoca a una función que crea un archivo temporal con el contenido de la ejecución del php, el temporal será enviado como html y luego será eliminado. En caso de no ser encontrado el archivo se enviará un mensaje de error 404.
 Una vez recuperado el archivo se determina su extensión, de acuerdo a este valor se envía el header correspondiente y luego se envía el archivo requerido dentro de un ciclo en el cual se leerán y se transmitirán de a un kilobyte.
 
-= Terminación del servicio =
+== Terminación del servicio ==
 El servidor finaliza de manera correcta cuando recibe la señal SIGUSR1 y mostrará un mensaje luego de terminar.
-Implementación
+
+= Implementación =
 
 servidorD.c
 En este archivo se implementó la función main() que le da inicio, en la misma se realizan  chequeos de la entrada para luego invocar a correrServidor() que dará inicio al servicio. Las otras funciones implementadas son referentes a las validaciones y al manejo de señales.
@@ -45,7 +46,7 @@ También se implementaron funciones de control y funciones para el procesamiento
 Responsabilidades principales
 
 
-servidorD.c
+_servidorD.c_
 	
 {{{void mostrarAyuda(char* argv[]) }}}
 
@@ -98,7 +99,7 @@ connHandler.c
 	Poner servidor a la espera de conexiones y manejar la interacción básica para la respuesta 
 de solicitudes.	
 
-dataHandler.c
+_dataHandler.c_
 
 char *extraerParametrosPHP(char* string)
 
@@ -140,7 +141,7 @@ char *ejecutarPHP(char *path, char *vars)
 Crea un proceso hijo que realiza una llamada a php-cgi.
 
 
-servidorD.c
+_servidorD.c_
 	
 void mostrarAyuda(char* argv[]) 
 
