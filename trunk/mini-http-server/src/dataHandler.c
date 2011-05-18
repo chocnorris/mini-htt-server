@@ -207,7 +207,9 @@ void send2(int fd, const void* buf, size_t n, int flags, char *action){
  *		0 en caso de éxito
  *		indefinido en caso contrario
  **************************************************************************************/
-int enviarHeader(int flag, int sockfd, char *path){
+int enviarHeader(int sockfd, response *r){
+	int flag=r->codigo;
+	char *path=r->path;
 	if(flag==HTTP_OK){
 		send2(sockfd, HD_HTTP_OK, strlen(HD_HTTP_OK), 0,"Enviando header.");
 

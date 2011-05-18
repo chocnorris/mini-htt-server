@@ -99,7 +99,7 @@ int correrServidor(char *ip, int p){
 		/* Procesar solicitud */
 		procesarPedido(buffer,&r);
 		/* Enviar respuesta: HEADER y OBJETO */
-		enviarHeader(r.codigo,new_fd, r.path);
+		enviarHeader(new_fd, &r);
 		if (r.codigo==HTTP_OK)
 			enviarArchivo(r.path,new_fd);
 		if (r.codigo==HTTP_FNOTFND)

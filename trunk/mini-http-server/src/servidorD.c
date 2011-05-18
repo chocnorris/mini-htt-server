@@ -297,7 +297,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    //daemon(1,1); /* Modo demonio: programa principal en background */
+    daemon(1,1); /* Modo demonio: programa principal en background */
     if ( (chdir("htdocs/")==-1) ){
     	perror("Cambiando a /htdocs");
     	printf("nro error= %d.\n", errno);
