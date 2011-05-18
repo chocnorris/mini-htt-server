@@ -21,7 +21,9 @@
 #include <ctype.h>
 #include <arpa/inet.h>
 #include<sys/socket.h>
+#include <signal.h>
 #include "connHandler.c"
+
 
 
 
@@ -201,9 +203,20 @@ int dominioValido(char *dominio, char *ipres){
  **************************************************************************************/
 
 void signalHandler(int sig) {
-	printf("El servidor terminó correctamente\n");
-	free(ip);
-	exit(EXIT_SUCCESS);
+	switch (sig){
+	case SIGUSR1:
+		printf("El servidor terminó correctamente\n");
+		exit(EXIT_SUCCESS);
+	case SIGKILL:
+	case SIGABRT:
+	case SIGHUP:
+	case SIGINT:
+	case SIGQUIT:
+	case SIGTERM:
+		printf("Error: El servidor terminó de forma inesperada\n");
+		perror("signal");
+		exit(EXIT_FAILURE);
+	}
 }
 
 /**************************************************************************************
@@ -224,6 +237,11 @@ int main(int argc, char *argv[]) {
 	/* Manejar señales */
     signal(SIGUSR1, signalHandler);
     signal(SIGCHLD, SIG_IGN);
+	signal(SIGABRT, signalHandler);
+	signal(SIGHUP, signalHandler);
+	signal(SIGINT, signalHandler);
+	signal(SIGQUIT, signalHandler);
+	signal(SIGTERM, signalHandler);
 
     if (argc>0 && argc<=3){
     	/* Buscar -h para mostrar ayuda y salir */
@@ -279,7 +297,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    daemon(1,1); /* Modo demonio: programa principal en background */
+    //daemon(1,1); /* Modo demonio: programa principal en background */
     if ( (chdir("htdocs/")==-1) ){
     	perror("Cambiando a /htdocs");
     	printf("nro error= %d.\n", errno);
