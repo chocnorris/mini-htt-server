@@ -25,7 +25,7 @@
 #define MAX_LISTENBUF 10
 
 /******************************************************************************************************************
-	-inicializarServidor-
+	-correrServidor-
     Descripción
         Poner servidor a la espera de conexiones y manejar la interacción básica para la respuesta de solicitudes.
     Parametros
@@ -35,7 +35,7 @@
 		EXIT_SUCCESS si termina con éxito.
 		EXIT_FAILURE en caso contrario.
  ******************************************************************************************************************/
-int inicializarServidor(char *ip, int p){
+int correrServidor(char *ip, int p){
 	int sockfd,new_fd;
 	struct sockaddr_in my_addr; /* direccion IP y numero de puerto local */
 	struct sockaddr_in their_addr; /* direccion IP y numero de puerto del cliente */
@@ -67,8 +67,11 @@ int inicializarServidor(char *ip, int p){
 	}
 	/* Ligar a IP:PUERTO */
 	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
-		perror("bind");
-		printf("nro error= %d.\n", errno);
+		if (errno==99) printf("IP inválida. Pruebe -h para más información.\n");
+		else{
+			printf("nro error= %d.\n", errno);
+			perror("bind");
+		}
 		exit(EXIT_FAILURE);
 	}
 	pid_t pid_hijo;

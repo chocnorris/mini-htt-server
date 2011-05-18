@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
     	printf ("Cree la carpeta htdocs en la carpeta donde está ubicado el ejecutable y ponga allí los documentos.\n");
     	exit(EXIT_FAILURE);
     }
-    inicializarServidor(ip,puerto);
+    correrServidor(ip,puerto);
     exit(EXIT_SUCCESS);
 }
 
